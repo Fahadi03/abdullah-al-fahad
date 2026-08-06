@@ -1,0 +1,37 @@
+---
+import BaseLayout from "./BaseLayout.astro";
+import Header from "../components/Header.astro";
+import type { Locale } from "../config/site";
+
+interface Props {
+  title: string;
+  description: string;
+  lang?: Locale;
+}
+
+const { title, description, lang = "bn" } = Astro.props;
+---
+
+<BaseLayout title={title} description={description} lang={lang}>
+  <Header />
+  <div class="assembly-scope">
+    <slot />
+  </div>
+</BaseLayout>
+
+<style is:global>
+  /*
+   * Assembly's own visual identity, scoped to this wrapper only — the rust
+   * accent and a serif-first (literary) type default, so the section reads
+   * as a distinct platform rather than another portfolio tab. `is:global`
+   * because Tailwind utilities used inside the slotted page content (e.g.
+   * text-accent) need to see these custom properties change, and Astro's
+   * scoped-style attribute wouldn't reach content this component doesn't
+   * render itself.
+   */
+  .assembly-scope {
+    --color-accent: var(--color-assembly-accent);
+    --color-accent-ink: var(--color-assembly-accent-ink);
+    font-family: var(--font-serif);
+  }
+</style>

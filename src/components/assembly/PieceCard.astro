@@ -1,0 +1,55 @@
+---
+import type { CollectionEntry } from "astro:content";
+import LanguageChip from "../LanguageChip.astro";
+import { formatDate } from "../../lib/numerals";
+import { SITE } from "../../config/site";
+
+interface Props {
+  piece: CollectionEntry<"assembly">;
+}
+
+const { piece } = Astro.props;
+const { title, description, lang, pubDate } = piece.data;
+---
+
+<a href={`${SITE.assemblyBase}/${piece.id}`} class="piece-card">
+  <div class="piece-meta">
+    <LanguageChip lang={lang} />
+    <time datetime={pubDate.toISOString()}>{formatDate(pubDate, lang)}</time>
+  </div>
+  <h3 class="piece-title" lang={lang}>{title}</h3>
+  <p class="piece-description" lang={lang}>{description}</p>
+</a>
+
+<style>
+  .piece-card {
+    display: block;
+    padding-block: 1.75rem;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .piece-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-family: var(--font-sans);
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
+  }
+
+  .piece-title {
+    margin-top: 0.75rem;
+    font-size: var(--text-2xl);
+    line-height: 1.35;
+    transition: color var(--duration-fast) var(--ease-editorial);
+  }
+
+  .piece-card:hover .piece-title {
+    color: var(--color-accent);
+  }
+
+  .piece-description {
+    margin-top: 0.5rem;
+    color: var(--color-text-muted);
+  }
+</style>

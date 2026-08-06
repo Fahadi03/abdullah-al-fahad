@@ -1,7 +1,8 @@
 # Abdullah Al Fahad — personal site
 
 Personal portfolio and publishing platform: writing (Bangla + English),
-videos, and [Assembly of Ideas — তত্ত্ব সভা](https://github.com/Fahadi03).
+videos, and [Assembly of Ideas — তত্ত্ব সভা](/assembly), a self-contained
+literary micro-site hosted at `/assembly`.
 
 Full spec lives in [PROMPT.md](./PROMPT.md).
 
@@ -30,18 +31,27 @@ npm run preview  # serve the production build locally
 
 ```
 src/
-  components/   ArticleCard, VideoCard, ShareRow, TableOfContents, ...
+  components/
+    assembly/   PieceCard, Timeline, Gallery — Assembly-only, not reused
+                elsewhere (see "Assembly of Ideas" below)
+    ...         ArticleCard, VideoCard, ShareRow, TableOfContents, ...
   config/       site.ts (SITE_URL, Assembly base path, socials),
                 featured.ts (drives /start)
   content/
-    writings/   articles (.mdx) — the writings collection
-    series/     series definitions (.mdx) — the series collection
-    videos/     videos.yaml — the videos collection (one flat data file)
-  content.config.ts  zod schemas for writings, series, videos
-  layouts/      BaseLayout.astro, ProseLayout.astro (article reading shell)
+    writings/     articles (.mdx) — the writings collection
+    series/       series definitions (.mdx) — the series collection
+    videos/       videos.yaml — the videos collection (one flat data file)
+    assembly/
+      pieces/       Assembly essays (.mdx) — the assembly collection
+      timeline.yaml  milestones — the assemblyTimeline collection
+      gallery.yaml   event photos — the assemblyGallery collection
+  content.config.ts  zod schemas for every collection above
+  layouts/      BaseLayout.astro, ProseLayout.astro (writings reading shell),
+                AssemblyLayout.astro (Assembly's own accent + type override)
   lib/          writings.ts, videos.ts, reading-time.ts, numerals.ts —
                 query/formatting helpers shared across pages
-  pages/        index.astro (home), start.astro, writings/, series/, videos/
+  pages/        index.astro (home), start.astro, writings/, series/,
+                videos/, assembly/
   styles/       global.css (entry point), tokens.css (design tokens),
                 fonts.css (generated — see below)
 public/
@@ -113,6 +123,74 @@ card on Home and the video pick on `/start` both show an honest
 while the file is empty — that's expected, not a build error, and it
 goes away once the array has entries.
 
+### Add an Assembly piece
+
+Create a new `.mdx` file in `src/content/assembly/pieces/`. The filename
+becomes the slug, published at `/assembly/<slug>`. Frontmatter:
+`title`, `description`, `lang`, `pubDate`, `tags` (optional), `draft`
+(optional) — same shape as a writings article, minus series.
+
+### Add an Assembly timeline milestone
+
+Add an entry to `src/content/assembly/timeline.yaml`:
+
+```yaml
+- id: unique-slug
+  date: 2025-06-01
+  title: "..."
+  description: "..."
+  image: "./gallery/optional-photo.jpg" # optional
+```
+
+### Add an Assembly gallery photo
+
+Add an entry to `src/content/assembly/gallery.yaml`, image colocated next
+to the file (not in `/public`):
+
+```yaml
+- id: unique-slug
+  src: "./photos/my-photo.jpg"
+  alt: "Short English alt text for screen readers"
+  captionBn: "বাংলায় ক্যাপশন"
+  date: 2025-06-01 # optional
+```
+
+Both files start empty (`[]`) rather than seeded with placeholder
+photos or invented milestones — see "Assembly of Ideas" below for why.
+
+## Assembly of Ideas
+
+`/assembly` is built to be lifted onto its own domain later with a
+folder copy, per the spec:
+
+- Self-contained: its own three collections (`assembly`,
+  `assemblyTimeline`, `assemblyGallery`), its own layout
+  (`AssemblyLayout.astro`), its own components (`src/components/assembly/`).
+  Nothing in `src/components/` outside that folder branches on "is this
+  Assembly" — variants are passed as props instead.
+- Its own visual identity, applied as a token override rather than a
+  parallel design system: `AssemblyLayout` wraps its slot in a
+  `.assembly-scope` div that reassigns `--color-accent` to
+  `--color-assembly-accent` and switches the base font to the serif
+  stack. Because Tailwind v4 utilities like `text-accent` reference the
+  CSS variable rather than a literal color, every shared component
+  (`ShareRow`, `LanguageChip`, `.prose` links, focus rings, ...) picks up
+  the rust accent automatically inside that scope, with zero
+  Assembly-specific branching in those components.
+- Every internal link is built from `SITE.assemblyBase` (`src/config/site.ts`),
+  never a hardcoded `/assembly` string — so moving to a subdomain is
+  changing that one constant plus adding 301s for the old paths.
+- Not yet done (later steps): Assembly's own RSS feed (step 11), and
+  Cusdis/Redis keys scoped as `assembly:<slug>` rather than derived from
+  the URL, once comments/reactions/view counts are built (step 9).
+
+**No fabricated content.** The gallery and most of the timeline ship
+empty rather than seeded with invented event photos or made-up
+milestones — the only timeline entry is the founding date, which the
+brief states as fact. Same reasoning as `/videos`: a photo or a
+specific dated event either really happened or it didn't, and this repo
+doesn't know Assembly's actual history beyond what it's been told.
+
 ## Fonts
 
 Bangla body: Noto Serif Bengali. Bangla display/headings: Hind Siliguri.
@@ -159,6 +237,13 @@ as those integrations are built.
   of hard-coding "Coming soon" — they'll pick up real data the moment
   `videos.yaml` has entries. Shipped with zero seed videos (see "Add a
   video" above) rather than fabricated placeholder content. Done.
+- Step 7 — `/assembly` and `/assembly/[slug]`: bilingual manifesto (given
+  real paragraph-length space in both languages, not a one-liner),
+  pieces list, vertical timeline, and a lightbox gallery — all
+  self-contained per the portability requirement (see "Assembly of
+  Ideas" above). Home's Assembly card now queries real data too. Seeded
+  with one founding timeline entry (a stated fact) and one reflective
+  piece; the gallery ships empty, same reasoning as `/videos`. Done.
 
 See `PROMPT.md` for the full build order.
 

@@ -1,0 +1,95 @@
+---
+import type { CollectionEntry } from "astro:content";
+import { formatDate } from "../../lib/numerals";
+
+interface Props {
+  milestones: CollectionEntry<"assemblyTimeline">[];
+}
+
+const { milestones } = Astro.props;
+const sorted = [...milestones].sort((a, b) => a.data.date.valueOf() - b.data.date.valueOf());
+---
+
+{
+  sorted.length > 0 ? (
+    <ol class="timeline">
+      {sorted.map((milestone) => (
+        <li class="timeline-item">
+          <span class="timeline-marker" aria-hidden="true" />
+          <time datetime={milestone.data.date.toISOString()} class="timeline-date" lang="bn">
+            {formatDate(milestone.data.date, "bn")}
+          </time>
+          <h3 class="timeline-title" lang="bn">
+            {milestone.data.title}
+          </h3>
+          <p class="timeline-description" lang="bn">
+            {milestone.data.description}
+          </p>
+          {milestone.data.image && (
+            <img src={milestone.data.image} alt="" loading="lazy" class="timeline-image" />
+          )}
+        </li>
+      ))}
+    </ol>
+  ) : (
+    <p class="empty-state">কোনো মাইলফলক এখনো নেই।</p>
+  )
+}
+
+<style>
+  .timeline {
+    position: relative;
+    border-left: 2px solid var(--color-border);
+    padding-left: 1.75rem;
+  }
+
+  .timeline-item {
+    position: relative;
+    padding-bottom: 2.5rem;
+  }
+
+  .timeline-item:last-child {
+    padding-bottom: 0;
+  }
+
+  .timeline-marker {
+    position: absolute;
+    left: calc(-1.75rem - 5px);
+    top: 0.4rem;
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+    background-color: var(--color-accent);
+  }
+
+  .timeline-date {
+    display: block;
+    font-family: var(--font-sans);
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
+  }
+
+  .timeline-title {
+    margin-top: 0.5rem;
+    font-family: var(--font-display-bn);
+    font-size: var(--text-xl);
+    line-height: 1.4;
+  }
+
+  .timeline-description {
+    margin-top: 0.5rem;
+    color: var(--color-text-muted);
+  }
+
+  .timeline-image {
+    margin-top: 1rem;
+    border-radius: var(--radius-md);
+    max-width: 100%;
+  }
+
+  .empty-state {
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+  }
+</style>

@@ -1,0 +1,217 @@
+---
+import type { CollectionEntry } from "astro:content";
+
+interface Props {
+  photos: CollectionEntry<"assemblyGallery">[];
+}
+
+const { photos } = Astro.props;
+---
+
+{
+  photos.length > 0 ? (
+    <>
+      <div class="gallery-grid" data-gallery>
+        {photos.map((photo, index) => (
+          <button
+            type="button"
+            class="gallery-item"
+            data-gallery-trigger
+            data-index={index}
+            data-src={photo.data.src}
+            data-caption={photo.data.captionBn}
+            aria-label={photo.data.alt}
+          >
+            <img src={photo.data.src} alt={photo.data.alt} loading="lazy" />
+          </button>
+        ))}
+      </div>
+
+      <div class="lightbox" data-lightbox hidden role="dialog" aria-modal="true" aria-label="Photo">
+        <button type="button" class="lightbox-close" data-lightbox-close aria-label="Close">
+          ✕
+        </button>
+        <button type="button" class="lightbox-nav lightbox-prev" data-lightbox-prev aria-label="Previous photo">
+          ‹
+        </button>
+        <figure class="lightbox-figure">
+          <img class="lightbox-image" data-lightbox-image alt="" />
+          <figcaption class="lightbox-caption" data-lightbox-caption lang="bn" />
+        </figure>
+        <button type="button" class="lightbox-nav lightbox-next" data-lightbox-next aria-label="Next photo">
+          ›
+        </button>
+      </div>
+    </>
+  ) : (
+    <p class="empty-state">কোনো ছবি এখনো নেই।</p>
+  )
+}
+
+<style>
+  .gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+
+  @media (min-width: 640px) {
+    .gallery-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  .gallery-item {
+    aspect-ratio: 1;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+  }
+
+  .gallery-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform var(--duration-slow) var(--ease-editorial);
+  }
+
+  .gallery-item:hover img {
+    transform: scale(1.04);
+  }
+
+  .empty-state {
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+  }
+
+  .lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(10, 9, 7, 0.9);
+    padding: 1.5rem;
+  }
+
+  .lightbox[hidden] {
+    display: none;
+  }
+
+  .lightbox-figure {
+    max-width: min(90vw, 900px);
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .lightbox-image {
+    max-width: 100%;
+    max-height: 75vh;
+    border-radius: var(--radius-md);
+    display: block;
+  }
+
+  .lightbox-caption {
+    font-family: var(--font-serif-bn);
+    font-size: var(--text-base);
+    color: #ece6d9;
+    text-align: center;
+  }
+
+  .lightbox-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    color: #fff;
+    font-size: var(--text-xl);
+    height: 2.75rem;
+    width: 2.75rem;
+  }
+
+  .lightbox-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #fff;
+    font-size: var(--text-3xl);
+    height: 3rem;
+    width: 3rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .lightbox-prev {
+    left: 0.5rem;
+  }
+
+  .lightbox-next {
+    right: 0.5rem;
+  }
+
+  @media (min-width: 640px) {
+    .lightbox-prev {
+      left: 1.5rem;
+    }
+    .lightbox-next {
+      right: 1.5rem;
+    }
+  }
+</style>
+
+<script>
+  const gallery = document.querySelector<HTMLElement>("[data-gallery]");
+  const lightboxEl = document.querySelector<HTMLElement>("[data-lightbox]");
+  if (gallery && lightboxEl) {
+    const lightbox = lightboxEl;
+    const triggers = Array.from(gallery.querySelectorAll<HTMLButtonElement>("[data-gallery-trigger]"));
+    const image = lightbox.querySelector<HTMLImageElement>("[data-lightbox-image]")!;
+    const caption = lightbox.querySelector<HTMLElement>("[data-lightbox-caption]")!;
+    let currentIndex = 0;
+    let lastFocused: HTMLElement | null = null;
+
+    function show(index: number) {
+      currentIndex = (index + triggers.length) % triggers.length;
+      const trigger = triggers[currentIndex];
+      image.src = trigger.dataset.src ?? "";
+      image.alt = trigger.getAttribute("aria-label") ?? "";
+      caption.textContent = trigger.dataset.caption ?? "";
+    }
+
+    function open(index: number) {
+      lastFocused = document.activeElement as HTMLElement | null;
+      show(index);
+      lightbox.hidden = false;
+      lightbox.querySelector<HTMLButtonElement>("[data-lightbox-close]")?.focus();
+    }
+
+    function close() {
+      lightbox.hidden = true;
+      lastFocused?.focus();
+    }
+
+    triggers.forEach((trigger, index) => {
+      trigger.addEventListener("click", () => open(index));
+    });
+
+    lightbox.querySelector("[data-lightbox-close]")?.addEventListener("click", close);
+    lightbox.querySelector("[data-lightbox-prev]")?.addEventListener("click", () => show(currentIndex - 1));
+    lightbox.querySelector("[data-lightbox-next]")?.addEventListener("click", () => show(currentIndex + 1));
+
+    lightbox.addEventListener("click", (event) => {
+      if (event.target === lightbox) close();
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (lightbox.hidden) return;
+      if (event.key === "Escape") close();
+      if (event.key === "ArrowLeft") show(currentIndex - 1);
+      if (event.key === "ArrowRight") show(currentIndex + 1);
+    });
+  }
+</script>

@@ -1,4 +1,5 @@
 ---
+import { getCollection } from "astro:content";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Header from "../components/Header.astro";
 import ArticleCard from "../components/ArticleCard.astro";
@@ -12,10 +13,14 @@ import { SITE } from "../config/site";
 const writings = await getPublishedWritings();
 const allSeries = await getAllSeries();
 const videos = await getPublishedVideos();
+const assemblyPieces = (
+  await getCollection("assembly", (entry) => import.meta.env.DEV || !entry.data.draft)
+).sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
 
 const latestWriting = writings[0];
 const latestWritingSeries = latestWriting ? await resolveSeries(latestWriting) : undefined;
 const latestVideo = videos[0];
+const latestPiece = assemblyPieces[0];
 
 // "Recent" mixes articles and videos, newest first.
 const recentWritings = await Promise.all(
@@ -75,10 +80,22 @@ const recent = [...recentWritings, ...recentVideos].sort((a, b) => b.date.valueO
         }
       </a>
 
-      <div class="entry-card entry-card-assembly" aria-disabled="true">
-        <span class="entry-label">Assembly of Ideas — তত্ত্ব সভা</span>
-        <p class="entry-meta">Coming soon</p>
-      </div>
+      {
+        latestPiece ? (
+          <a href={SITE.assemblyBase} class="entry-card entry-card-assembly">
+            <span class="entry-label">Assembly of Ideas — তত্ত্ব সভা</span>
+            <h2 class="entry-title" lang={latestPiece.data.lang}>
+              {latestPiece.data.title}
+            </h2>
+            <p class="entry-meta">Latest</p>
+          </a>
+        ) : (
+          <div class="entry-card entry-card-assembly" aria-disabled="true">
+            <span class="entry-label">Assembly of Ideas — তত্ত্ব সভা</span>
+            <p class="entry-meta">Coming soon</p>
+          </div>
+        )
+      }
 
       {
         latestVideo ? (

@@ -1,0 +1,143 @@
+---
+import { getCollection, type CollectionEntry } from "astro:content";
+import AssemblyLayout from "../../layouts/AssemblyLayout.astro";
+import PieceCard from "../../components/assembly/PieceCard.astro";
+import Timeline from "../../components/assembly/Timeline.astro";
+import Gallery from "../../components/assembly/Gallery.astro";
+
+function isPublished(entry: CollectionEntry<"assembly">): boolean {
+  return import.meta.env.DEV || !entry.data.draft;
+}
+
+const pieces = (await getCollection("assembly", isPublished)).sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+);
+const milestones = await getCollection("assemblyTimeline");
+const photos = await getCollection("assemblyGallery");
+---
+
+<AssemblyLayout
+  title="Assembly of Ideas"
+  description="তত্ত্ব সভা — সাহিত্য ও বাংলার ঐতিহাসিক রচনার একটি প্ল্যাটফর্ম, ফেব্রুয়ারি ২০২৫ থেকে।"
+  lang="bn"
+>
+  <main class="mx-auto max-w-3xl px-6 py-12 sm:px-10 sm:py-16">
+    <section>
+      <p class="eyebrow">ফেব্রুয়ারি ২০২৫ থেকে · Since February 2025</p>
+      <h1 class="manifesto-title" lang="bn">অ্যাসেম্বলি অফ আইডিয়াজ — তত্ত্ব সভা</h1>
+
+      <div class="manifesto" lang="bn">
+        <p>
+          অ্যাসেম্বলি অফ আইডিয়াজ — তত্ত্ব সভা শুরু হয়েছিল ফেব্রুয়ারি ২০২৫-এ, একটি সাধারণ বিশ্বাস থেকে — বাংলা
+          ভাষায় গুরুত্বপূর্ণ চিন্তা ও ইতিহাস নিয়ে লেখার জন্য একটা জায়গা দরকার, যেটা কোনো বড় প্রকাশনার অধীনে নয়,
+          বরং সরাসরি পাঠকের কাছে পৌঁছায়।
+        </p>
+        <p>
+          এখানে যা প্রকাশিত হয় তার বেশিরভাগই সাহিত্য ও বাংলার ঐতিহাসিক রচনা নিয়ে — পুরনো লেখা নতুন করে পড়া,
+          ভুলে যাওয়া ঘটনা মনে করিয়ে দেওয়া, আর এমন প্রশ্ন তোলা যেগুলো সহজে উত্তর পায় না।
+        </p>
+        <p>এটা কোনো বড় প্রতিষ্ঠান নয় — একজন মানুষের একটা ধারাবাহিক চেষ্টা, সময়ের সাথে সাথে বাড়ছে।</p>
+      </div>
+
+      <div class="manifesto manifesto-en" lang="en">
+        <p>
+          Assembly of Ideas — তত্ত্ব সভা began in February 2025, out of a simple belief: that writing on serious
+          ideas and history in Bangla needs a home that isn't under a larger publication, and reaches readers
+          directly.
+        </p>
+        <p>
+          Most of what gets published here is about literature and Bangla historical writing — rereading old
+          texts, recovering forgotten events, and asking questions that don't have easy answers.
+        </p>
+        <p>It isn't an institution — it's one person's ongoing effort, growing slowly over time.</p>
+      </div>
+    </section>
+
+    <section class="mt-20 border-t border-border pt-14">
+      <h2 class="section-title" lang="bn">রচনা <span class="section-title-en">— Pieces</span></h2>
+      {
+        pieces.length > 0 ? (
+          <div class="mt-8">
+            {pieces.map((piece) => (
+              <PieceCard piece={piece} />
+            ))}
+          </div>
+        ) : (
+          <p class="empty-state">এখনো কিছু প্রকাশিত হয়নি।</p>
+        )
+      }
+    </section>
+
+    <section class="mt-20 border-t border-border pt-14">
+      <h2 class="section-title" lang="bn">সময়রেখা <span class="section-title-en">— Timeline</span></h2>
+      <div class="mt-8">
+        <Timeline milestones={milestones} />
+      </div>
+    </section>
+
+    <section class="mt-20 border-t border-border pt-14">
+      <h2 class="section-title" lang="bn">গ্যালারি <span class="section-title-en">— Gallery</span></h2>
+      <div class="mt-8">
+        <Gallery photos={photos} />
+      </div>
+    </section>
+  </main>
+</AssemblyLayout>
+
+<style>
+  .eyebrow {
+    font-family: var(--font-sans);
+    font-size: var(--text-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--color-text-muted);
+  }
+
+  .manifesto-title {
+    margin-top: 0.75rem;
+    font-family: var(--font-display-bn);
+    font-size: var(--text-3xl);
+    line-height: 1.3;
+    text-wrap: balance;
+  }
+
+  @media (min-width: 640px) {
+    .manifesto-title {
+      font-size: var(--text-4xl);
+    }
+  }
+
+  .manifesto {
+    margin-top: 2rem;
+    font-size: var(--text-lg);
+    color: var(--color-text-muted);
+  }
+
+  .manifesto p + p {
+    margin-top: 1.25rem;
+  }
+
+  .manifesto-en {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .section-title {
+    font-family: var(--font-display-bn);
+    font-size: var(--text-2xl);
+  }
+
+  .section-title-en {
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+  }
+
+  .empty-state {
+    margin-top: 2rem;
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+  }
+</style>

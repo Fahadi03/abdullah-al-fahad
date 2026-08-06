@@ -1,0 +1,12 @@
+# Event photographs — responsive grid with a lightbox on /assembly.
+# Images live alongside this file (e.g. ./photos/my-photo.jpg), not in the
+# shared /public bucket, so Assembly stays self-contained.
+#
+# - id: unique-slug
+#   src: "./photos/my-photo.jpg"
+#   alt: "Short English alt text for screen readers"
+#   captionBn: "বাংলায় ক্যাপশন"
+#   date: 2025-06-01 # optional
+#
+# Empty for now — no photographs to show yet.
+[]
