@@ -1,0 +1,55 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Header from "../components/Header.astro";
+import { formatDate } from "../lib/numerals";
+
+const updated = new Date("2026-08-07");
+---
+
+<BaseLayout title="Now" description="What I'm working on this month.">
+  <Header />
+
+  <main class="mx-auto max-w-3xl px-6 py-12 sm:px-10 sm:py-16">
+    <h1 class="font-serif text-4xl leading-tight text-balance">Now</h1>
+    <p class="updated">Last updated {formatDate(updated, "en")}</p>
+
+    <ul class="now-list">
+      <li>Building this site, one section at a time — writings, videos and Assembly of Ideas are live; projects, comments and the rest of the dynamic layer are next.</li>
+      <li>Writing the next episode of the গবেষণা ও মেশিন লার্নিং series on /writings.</li>
+      <li>Publishing occasional pieces on Assembly of Ideas — তত্ত্ব সভা.</li>
+    </ul>
+
+    <p class="footnote">A /now page — a short, dated note on the current focus, not a running blog.</p>
+  </main>
+</BaseLayout>
+
+<style>
+  .updated {
+    margin-top: 0.5rem;
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+  }
+
+  .now-list {
+    margin-top: 2.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    font-family: var(--font-serif);
+    font-size: var(--text-lg);
+  }
+
+  .now-list li {
+    padding-left: 1.25rem;
+    border-left: 2px solid var(--color-accent);
+  }
+
+  .footnote {
+    margin-top: 3rem;
+    font-family: var(--font-sans);
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
+  }
+
+</style>

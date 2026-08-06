@@ -1,0 +1,94 @@
+---
+import type { CollectionEntry } from "astro:content";
+
+interface Props {
+  project: CollectionEntry<"projects">;
+}
+
+const { project } = Astro.props;
+const { title, description, role, stack, outcome } = project.data;
+---
+
+<a href={`/projects/${project.id}`} class="project-card">
+  <h3 class="project-title">{title}</h3>
+  <p class="project-problem">{description}</p>
+
+  <dl class="project-meta">
+    <div>
+      <dt>Role</dt>
+      <dd>{role}</dd>
+    </div>
+    <div>
+      <dt>Outcome</dt>
+      <dd>{outcome}</dd>
+    </div>
+  </dl>
+
+  <ul class="project-stack">
+    {stack.map((tech) => <li>{tech}</li>)}
+  </ul>
+</a>
+
+<style>
+  .project-card {
+    display: block;
+    padding: 1.75rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    transition:
+      border-color var(--duration-fast) var(--ease-editorial),
+      background-color var(--duration-fast) var(--ease-editorial);
+  }
+
+  .project-card:hover {
+    border-color: var(--color-accent);
+    background-color: var(--color-bg-raised);
+  }
+
+  .project-title {
+    font-family: var(--font-serif);
+    font-size: var(--text-xl);
+    line-height: 1.3;
+  }
+
+  .project-problem {
+    margin-top: 0.5rem;
+    color: var(--color-text-muted);
+  }
+
+  .project-meta {
+    margin-top: 1.25rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+  }
+
+  .project-meta dt {
+    font-size: var(--text-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    color: var(--color-text-muted);
+  }
+
+  .project-meta dd {
+    margin-top: 0.25rem;
+  }
+
+  .project-stack {
+    margin-top: 1.25rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .project-stack li {
+    font-family: var(--font-sans);
+    font-size: var(--text-xs);
+    padding: 0.25rem 0.6rem;
+    border-radius: 999px;
+    border: 1px solid var(--color-border);
+    color: var(--color-text-muted);
+  }
+</style>

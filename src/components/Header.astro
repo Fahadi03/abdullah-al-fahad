@@ -1,35 +1,103 @@
 ---
 import ThemeToggle from "./ThemeToggle.astro";
 import { SITE } from "../config/site";
+
+const navLinks = [
+  { href: "/start", label: "Start" },
+  { href: "/writings", label: "Writings" },
+  { href: "/videos", label: "Videos" },
+  { href: SITE.assemblyBase, label: "Assembly" },
+  { href: "/projects", label: "Projects" },
+  { href: "/about", label: "About" },
+  { href: "/now", label: "Now" },
+];
 ---
 
-<header class="flex items-center justify-between border-b border-border px-6 py-4 sm:px-10">
-  <a href="/" class="font-sans text-sm font-medium tracking-wide">{SITE.name}</a>
-  <nav class="flex items-center gap-6">
-    <a
-      href="/start"
-      class="font-sans text-sm text-text-muted transition-colors duration-fast hover:text-text"
-    >
-      Start
-    </a>
-    <a
-      href="/writings"
-      class="font-sans text-sm text-text-muted transition-colors duration-fast hover:text-text"
-    >
-      Writings
-    </a>
-    <a
-      href="/videos"
-      class="font-sans text-sm text-text-muted transition-colors duration-fast hover:text-text"
-    >
-      Videos
-    </a>
-    <a
-      href={SITE.assemblyBase}
-      class="font-sans text-sm text-text-muted transition-colors duration-fast hover:text-text"
-    >
-      Assembly
-    </a>
-    <ThemeToggle />
+<header class="border-b border-border">
+  <div class="flex items-center justify-between px-6 py-4 sm:px-10">
+    <a href="/" class="font-sans text-sm font-medium tracking-wide">{SITE.name}</a>
+
+    <div class="flex items-center gap-4">
+      <nav class="hidden items-center gap-6 sm:flex" aria-label="Primary">
+        {
+          navLinks.map((link) => (
+            <a
+              href={link.href}
+              class="font-sans text-sm text-text-muted transition-colors duration-fast hover:text-text"
+            >
+              {link.label}
+            </a>
+          ))
+        }
+      </nav>
+
+      <ThemeToggle />
+
+      <button
+        type="button"
+        class="nav-toggle inline-flex items-center justify-center sm:hidden"
+        data-nav-toggle
+        aria-expanded="false"
+        aria-controls="mobile-nav"
+        aria-label="Menu"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="h-5 w-5">
+          <path d="M3 6h18M3 12h18M3 18h18"></path>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <nav id="mobile-nav" class="mobile-nav flex flex-col sm:hidden" data-mobile-nav hidden aria-label="Primary">
+    {
+      navLinks.map((link) => (
+        <a href={link.href} class="mobile-nav-link">
+          {link.label}
+        </a>
+      ))
+    }
   </nav>
 </header>
+
+<style>
+  /* display comes from Tailwind utilities on the elements themselves
+     (inline-flex/flex + sm:hidden) — a scoped `display` here would win the
+     cascade against the responsive utility and break the breakpoint. */
+  .nav-toggle {
+    height: 2.75rem;
+    width: 2.75rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    color: var(--color-text);
+  }
+
+  .mobile-nav {
+    border-top: 1px solid var(--color-border);
+    padding-inline: 1.5rem;
+  }
+
+  .mobile-nav-link {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+    color: var(--color-text);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .mobile-nav-link:last-child {
+    border-bottom: none;
+  }
+</style>
+
+<script>
+  const toggle = document.querySelector<HTMLButtonElement>("[data-nav-toggle]");
+  const nav = document.querySelector<HTMLElement>("[data-mobile-nav]");
+
+  toggle?.addEventListener("click", () => {
+    const expanded = toggle.getAttribute("aria-expanded") === "true";
+    toggle.setAttribute("aria-expanded", String(!expanded));
+    if (nav) nav.hidden = expanded;
+  });
+</script>

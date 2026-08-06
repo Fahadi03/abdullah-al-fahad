@@ -1,0 +1,44 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Header from "../../components/Header.astro";
+import ProjectCard from "../../components/ProjectCard.astro";
+import { getCollection, type CollectionEntry } from "astro:content";
+
+function isPublished(entry: CollectionEntry<"projects">): boolean {
+  return import.meta.env.DEV || !entry.data.draft;
+}
+
+const projects = (await getCollection("projects", isPublished)).sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+);
+---
+
+<BaseLayout title="Projects" description="Work and side projects — the problem, the role, and what I'd do differently.">
+  <Header />
+
+  <main class="mx-auto max-w-5xl px-6 py-12 sm:px-10 sm:py-16">
+    <h1 class="font-serif text-4xl leading-tight text-balance">Projects</h1>
+    <p class="mt-3 max-w-prose font-serif text-lg text-text-muted">Case studies, not a logo wall.</p>
+
+    {
+      projects.length > 0 ? (
+        <div class="mt-12 grid gap-6 sm:grid-cols-2">
+          {projects.map((project) => (
+            <ProjectCard project={project} />
+          ))}
+        </div>
+      ) : (
+        <p class="empty-state">Nothing published here yet — check back soon.</p>
+      )
+    }
+  </main>
+</BaseLayout>
+
+<style>
+  .empty-state {
+    margin-top: 3rem;
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+  }
+</style>

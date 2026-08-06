@@ -1,0 +1,150 @@
+---
+import { getCollection, render, type CollectionEntry } from "astro:content";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Header from "../../components/Header.astro";
+
+export async function getStaticPaths() {
+  const projects = await getCollection(
+    "projects",
+    (entry: CollectionEntry<"projects">) => import.meta.env.DEV || !entry.data.draft,
+  );
+  return projects.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
+}
+
+interface Props {
+  entry: CollectionEntry<"projects">;
+}
+
+const { entry } = Astro.props;
+const { title, description, role, stack, outcome, repoUrl, demoUrl } = entry.data;
+const { Content } = await render(entry);
+---
+
+<BaseLayout title={title} description={description}>
+  <Header />
+
+  <main class="mx-auto max-w-3xl px-6 py-12 sm:px-10 sm:py-16">
+    <a href="/projects" class="back-link">← Projects</a>
+
+    <h1 class="project-title">{title}</h1>
+    <p class="project-problem">{description}</p>
+
+    <dl class="project-meta">
+      <div>
+        <dt>Role</dt>
+        <dd>{role}</dd>
+      </div>
+      <div>
+        <dt>Outcome</dt>
+        <dd>{outcome}</dd>
+      </div>
+    </dl>
+
+    <ul class="project-stack">
+      {stack.map((tech) => <li>{tech}</li>)}
+    </ul>
+
+    {
+      (repoUrl || demoUrl) && (
+        <div class="project-links">
+          {repoUrl && (
+            <a href={repoUrl} target="_blank" rel="noopener noreferrer" class="project-link">
+              Repository ↗
+            </a>
+          )}
+          {demoUrl && (
+            <a href={demoUrl} target="_blank" rel="noopener noreferrer" class="project-link">
+              Live demo ↗
+            </a>
+          )}
+        </div>
+      )
+    }
+
+    <div class="prose mt-14">
+      <Content />
+    </div>
+  </main>
+</BaseLayout>
+
+<style>
+  .back-link {
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+    transition: color var(--duration-fast) var(--ease-editorial);
+  }
+
+  .back-link:hover {
+    color: var(--color-accent);
+  }
+
+  .project-title {
+    margin-top: 1rem;
+    font-family: var(--font-serif);
+    font-size: var(--text-4xl);
+    line-height: 1.25;
+    text-wrap: balance;
+  }
+
+  .project-problem {
+    margin-top: 1rem;
+    font-family: var(--font-serif);
+    font-size: var(--text-lg);
+    color: var(--color-text-muted);
+  }
+
+  .project-meta {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--color-border);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+  }
+
+  .project-meta dt {
+    font-size: var(--text-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    color: var(--color-text-muted);
+  }
+
+  .project-meta dd {
+    margin-top: 0.25rem;
+  }
+
+  .project-stack {
+    margin-top: 1.25rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .project-stack li {
+    font-family: var(--font-sans);
+    font-size: var(--text-xs);
+    padding: 0.25rem 0.6rem;
+    border-radius: 999px;
+    border: 1px solid var(--color-border);
+    color: var(--color-text-muted);
+  }
+
+  .project-links {
+    margin-top: 1.5rem;
+    display: flex;
+    gap: 1rem;
+  }
+
+  .project-link {
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    color: var(--color-accent);
+  }
+
+  .project-link:hover {
+    text-decoration: underline;
+  }
+</style>

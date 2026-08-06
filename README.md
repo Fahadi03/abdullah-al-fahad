@@ -158,6 +158,33 @@ to the file (not in `/public`):
 Both files start empty (`[]`) rather than seeded with placeholder
 photos or invented milestones — see "Assembly of Ideas" below for why.
 
+### Add a project
+
+Create a new `.mdx` file in `src/content/projects/` (the folder doesn't
+exist until the first one is added). Frontmatter:
+
+```yaml
+---
+title: "..."
+description: "..." # the problem this project addresses — the card summary
+role: "..."
+stack: ["Astro", "TypeScript", "..."]
+outcome: "..."
+repoUrl: "https://github.com/..." # optional
+demoUrl: "https://..." # optional
+pubDate: 2026-01-01
+draft: false # optional
+---
+```
+
+The MDX body is the case-study writeup — screenshots and a "What I'd do
+differently" section (the point of the page, per the spec) go there as
+regular Markdown/MDX content; `stack` renders as a chip list
+automatically from frontmatter. No seed projects ship — same reasoning
+as the empty Assembly gallery: a repo URL either really points
+somewhere or it doesn't, and this repo doesn't know Abdullah's actual
+project history.
+
 ## Assembly of Ideas
 
 `/assembly` is built to be lifted onto its own domain later with a
@@ -244,6 +271,13 @@ as those integrations are built.
   Ideas" above). Home's Assembly card now queries real data too. Seeded
   with one founding timeline entry (a stated fact) and one reflective
   piece; the gallery ships empty, same reasoning as `/videos`. Done.
+- Step 8 — `/projects` + `/projects/[slug]` (case-study cards; ships
+  empty, same reasoning as `/videos`), `/about` (a real long-form bio
+  from the facts in the brief — CSE student, FabTech.IT, Assembly of
+  Ideas — with a Bangla summary), `/now` (short, dated, honest about
+  current focus), `/404`. The nav grew to 7 links, which made the
+  header genuinely need a mobile menu rather than just wrapping — added
+  a hamburger disclosure at `sm:` and below, 44px tap targets. Done.
 
 See `PROMPT.md` for the full build order.
 

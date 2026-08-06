@@ -1,0 +1,91 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Header from "../components/Header.astro";
+import { SITE } from "../config/site";
+---
+
+<BaseLayout title="About" description="Final-year CSE student, junior full-stack developer, and the person behind Assembly of Ideas.">
+  <Header />
+
+  <main class="mx-auto max-w-3xl px-6 py-12 sm:px-10 sm:py-16">
+    <h1 class="font-serif text-4xl leading-tight text-balance">About</h1>
+
+    <div class="prose mt-10">
+      <p>
+        I'm a final-year Computer Science and Engineering student at Northern University Bangladesh, and I
+        work as a Junior Full-Stack Developer at FabTech.IT.
+      </p>
+      <p>
+        Most of what I build professionally is fairly ordinary web development — the kind of work that
+        doesn't need a case study. What I care more about writing here is the other half of what I do: an
+        ongoing, episode-style series in Bangla about research, datasets and machine learning, aimed at
+        readers who want to understand the mechanics rather than skim a summary. I also write technical
+        notes in English, usually about the practical side of building things — the kind of pattern I'd
+        want to find already written down the next time I hit the same problem.
+      </p>
+      <p>
+        Since February 2025 I've also run <a href={SITE.assemblyBase}>Assembly of Ideas — তত্ত্ব সভা</a>, a
+        small platform for literature and Bangla historical writing. It isn't affiliated with anything
+        larger; it exists because I think that kind of writing deserves a home that reaches readers
+        directly.
+      </p>
+      <p>I'm not trying to build an audience for its own sake. If something I've written saves someone an afternoon of confusion, that's the whole point.</p>
+    </div>
+
+    <section class="mt-14 border-t border-border pt-10">
+      <h2 class="section-title">Elsewhere</h2>
+      <ul class="links-list">
+        <li><a href={SITE.social.github} target="_blank" rel="noopener noreferrer">GitHub ↗</a></li>
+        <li><a href={SITE.social.linkedin} target="_blank" rel="noopener noreferrer">LinkedIn ↗</a></li>
+      </ul>
+    </section>
+
+    <section class="mt-14 border-t border-border pt-10" lang="bn">
+      <h2 class="section-title" lang="bn">সংক্ষেপে বাংলায়</h2>
+      <p class="bangla-summary">
+        আমি নর্দান ইউনিভার্সিটি বাংলাদেশে কম্পিউটার সায়েন্স অ্যান্ড ইঞ্জিনিয়ারিংয়ের শেষ বর্ষের ছাত্র, এবং
+        FabTech.IT-এ জুনিয়র ফুল-স্ট্যাক ডেভেলপার হিসেবে কাজ করি। গবেষণা ও মেশিন লার্নিং নিয়ে বাংলায় একটা
+        ধারাবাহিক লেখা লিখি, আর ফেব্রুয়ারি ২০২৫ থেকে চালাই{" "}
+        <a href={SITE.assemblyBase}>অ্যাসেম্বলি অফ আইডিয়াজ — তত্ত্ব সভা</a>, সাহিত্য ও বাংলার ইতিহাস নিয়ে একটা
+        ছোট প্ল্যাটফর্ম।
+      </p>
+    </section>
+  </main>
+</BaseLayout>
+
+<style>
+  .section-title {
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    color: var(--color-text-muted);
+  }
+
+  .links-list {
+    margin-top: 1rem;
+    display: flex;
+    gap: 1.5rem;
+  }
+
+  .links-list a {
+    font-family: var(--font-sans);
+    color: var(--color-accent);
+  }
+
+  .links-list a:hover {
+    text-decoration: underline;
+  }
+
+  .bangla-summary {
+    margin-top: 1rem;
+    font-family: var(--font-serif-bn);
+    font-size: var(--text-lg);
+    color: var(--color-text-muted);
+  }
+
+  .bangla-summary a {
+    color: var(--color-accent);
+  }
+</style>

@@ -81,4 +81,28 @@ const assemblyGallery = defineCollection({
   }),
 });
 
-export const collections = { writings, series, videos, assembly, assemblyTimeline, assemblyGallery };
+const projects = defineCollection({
+  loader: glob({ pattern: "**/*.mdx", base: "./src/content/projects" }),
+  schema: z.object({
+    title: z.string(),
+    // The problem this project addresses — the card summary.
+    description: z.string(),
+    role: z.string(),
+    stack: z.array(z.string()),
+    outcome: z.string(),
+    repoUrl: z.string().url().optional(),
+    demoUrl: z.string().url().optional(),
+    pubDate: z.coerce.date(),
+    draft: z.boolean().default(false),
+  }),
+});
+
+export const collections = {
+  writings,
+  series,
+  videos,
+  assembly,
+  assemblyTimeline,
+  assemblyGallery,
+  projects,
+};
