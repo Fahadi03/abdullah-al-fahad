@@ -1,0 +1,55 @@
+---
+title: "Rate Limiting an API Route with Upstash Redis"
+description: "A practical pattern for protecting a public form endpoint on Vercel with a sliding-window rate limit — no extra infrastructure, just Redis."
+lang: "en"
+pubDate: 2026-03-05
+tags: ["web-dev", "redis", "astro"]
+---
+
+Any public form endpoint — a contact form, a guestbook — attracts bots within days of going live. The fix doesn't need a dedicated service; a Redis instance you probably already have for something else is enough.
+
+## Why sliding window, not fixed window
+
+A fixed window (`INCR` a counter, reset every N minutes) has a boundary problem: a client can send a full quota's worth of requests right before the reset and another full quota right after, doubling the effective rate at the edge. A sliding window avoids that by scoring individual requests against a moving cutoff instead of a shared counter.
+
+## The pattern
+
+Store one sorted-set member per request, scored by timestamp, keyed per client:
+
+```ts
+import { Redis } from "@upstash/redis";
+
+const redis = Redis.fromEnv();
+
+export async function isRateLimited(key: string, limit: number, windowMs: number) {
+  const now = Date.now();
+  const windowStart = now - windowMs;
+
+  const pipeline = redis.pipeline();
+  pipeline.zremrangebyscore(key, 0, windowStart);
+  pipeline.zadd(key, { score: now, member: `${now}` });
+  pipeline.zcard(key);
+  pipeline.expire(key, Math.ceil(windowMs / 1000));
+
+  const [, , count] = await pipeline.exec<[unknown, unknown, number, unknown]>();
+  return count > limit;
+}
+```
+
+Three things make this safe under concurrent requests: the trim, the add, and the count all run inside one pipeline, so there's no read-then-write race between checking and recording a request.
+
+## Failing open, not closed
+
+If Redis is unreachable, the honest options are: block every request, or let every request through. For a low-stakes endpoint like a contact form, letting requests through and logging the outage is the better failure mode — a few extra emails during an incident beats a form that silently stops working for everyone.
+
+```ts
+try {
+  if (await isRateLimited(key, 5, 60 * 60 * 1000)) {
+    return new Response("Too many requests", { status: 429 });
+  }
+} catch (err) {
+  console.error("rate limit check failed, allowing request", err);
+}
+```
+
+Combined with a honeypot field and a minimum time-to-submit check, this covers the bots that matter without asking a real visitor to solve a CAPTCHA.

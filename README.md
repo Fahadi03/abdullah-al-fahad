@@ -32,6 +32,10 @@ npm run preview  # serve the production build locally
 src/
   components/   ThemeToggle, ... (grows as sections are built)
   config/       site.ts — SITE_URL, Assembly base path, socials
+  content/
+    writings/   articles (.mdx) — the writings collection
+    series/     series definitions (.mdx) — the series collection
+  content.config.ts  zod schemas for writings + series
   layouts/      BaseLayout.astro
   pages/        index.astro (placeholder — real home page comes later)
   styles/       global.css (entry point), tokens.css (design tokens),
@@ -43,6 +47,40 @@ scripts/
                   and src/styles/fonts.css from Google Fonts. The site
                   itself never talks to the Google Fonts CDN.
 ```
+
+## Content
+
+### Add an article
+
+Create a new `.mdx` file in `src/content/writings/`. The filename becomes
+the slug (`src/content/writings/my-post.mdx` → `/writings/my-post`).
+Required frontmatter:
+
+```yaml
+---
+title: "..."
+description: "..." # used as the card summary and meta description
+lang: "bn" | "en"
+pubDate: 2026-03-05
+tags: ["..."]
+draft: false # optional, defaults to false — keeps a post out of production
+---
+```
+
+A missing required field fails the build (`astro check`) rather than
+shipping silently. Future-dated `pubDate` values are meant to be excluded
+from production listings once `/writings` is built (see `PROMPT.md`).
+
+### Start a series
+
+Add a file to `src/content/series/`, e.g. `src/content/series/my-series.mdx`,
+with `title`, `description`, and `lang`. Then, on each article that belongs
+to it, set `series: "my-series"` (the series file's slug) and `seriesOrder`
+(1, 2, 3, ...) to place it in the reading order.
+
+See `src/content/series/research-and-ml.mdx` and its two episodes
+(`dataset-ki-o-keno-guruttopurno.mdx`, `model-training-steps.mdx`) for a
+working example.
 
 ## Fonts
 
@@ -64,5 +102,8 @@ as those integrations are built.
 
 ## Status
 
-Step 1 of the build order (scaffold, tokens, base layout, bilingual
-fonts, dark mode) is done. See `PROMPT.md` for the full build order.
+- Step 1 — scaffold, tokens, base layout, bilingual fonts, dark mode. Done.
+- Step 2 — content collections + zod schemas; seed content (two Bangla
+  articles forming a series, one English article). Done.
+
+See `PROMPT.md` for the full build order.
