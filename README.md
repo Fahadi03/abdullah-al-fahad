@@ -114,6 +114,13 @@ as those integrations are built.
   (`localStorage`, no accounts). Done.
 - Step 4 — Pagefind search on `/writings`, indexed at build time and
   combined with the language/tag/series filter chips. Done.
+- Step 5 — Home (editorial hero, three entry-point cards, Recent strip,
+  build-time stat line) and `/start` (hand-curated picks driven by
+  `src/config/featured.ts`). Done. Assembly/Videos entry cards and the
+  `/start` video/project picks show an honest "Coming soon" state —
+  there's no content for those yet (steps 6–8). The home newsletter
+  block is deferred to step 9, alongside the rest of the dynamic layer,
+  since that's where the real `NewsletterForm` component gets built.
 
 See `PROMPT.md` for the full build order.
 

@@ -1,0 +1,84 @@
+---
+import { getEntry } from "astro:content";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Header from "../components/Header.astro";
+import ArticleCard from "../components/ArticleCard.astro";
+import { resolveSeries } from "../lib/writings";
+import { estimateReadingMinutes } from "../lib/reading-time";
+import { FEATURED } from "../config/featured";
+
+const featuredWritings = (
+  await Promise.all(
+    FEATURED.writings.map(async ({ slug, reason }) => {
+      const entry = await getEntry("writings", slug);
+      if (!entry) return null;
+      return {
+        entry,
+        reason,
+        series: await resolveSeries(entry),
+        readingMinutes: estimateReadingMinutes(entry.body ?? "", entry.data.lang),
+      };
+    }),
+  )
+).filter((pick) => pick !== null);
+---
+
+<BaseLayout title="Start here" description="A hand-curated path through the site for a first-time reader.">
+  <Header />
+
+  <main class="mx-auto max-w-3xl px-6 py-12 sm:px-10 sm:py-16">
+    <h1 class="font-serif text-4xl leading-tight text-balance">Start here</h1>
+    <p class="mt-3 max-w-prose font-serif text-lg text-text-muted">
+      New here? This is a hand-picked path through the site, not the full archive.
+    </p>
+
+    <section class="mt-14">
+      <h2 class="mb-6 font-sans text-sm font-medium uppercase tracking-wide text-text-muted">Read</h2>
+      <div class="space-y-8">
+        {
+          featuredWritings.map(({ entry, reason, series, readingMinutes }) => (
+            <div>
+              <ArticleCard entry={entry} series={series} readingMinutes={readingMinutes} />
+              <p class="reason">{reason}</p>
+            </div>
+          ))
+        }
+      </div>
+    </section>
+
+    <section class="mt-14 border-t border-border pt-10">
+      <h2 class="mb-6 font-sans text-sm font-medium uppercase tracking-wide text-text-muted">Watch</h2>
+      <div class="coming-soon" aria-disabled="true">
+        <p>A video pick lands here once /videos exists.</p>
+      </div>
+    </section>
+
+    <section class="mt-14 border-t border-border pt-10">
+      <h2 class="mb-6 font-sans text-sm font-medium uppercase tracking-wide text-text-muted">Explore</h2>
+      <div class="coming-soon" aria-disabled="true">
+        <p>A project pick lands here once /projects exists.</p>
+      </div>
+    </section>
+  </main>
+</BaseLayout>
+
+<style>
+  .reason {
+    margin-top: 0.75rem;
+    padding-left: 1rem;
+    border-left: 2px solid var(--color-accent);
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+  }
+
+  .coming-soon {
+    padding: 1.75rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    color: var(--color-text-muted);
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    opacity: 0.6;
+  }
+</style>
