@@ -1,0 +1,69 @@
+@import "tailwindcss";
+@import "./fonts.css";
+@import "./tokens.css";
+
+@layer base {
+  *,
+  *::before,
+  *::after {
+    border-color: var(--color-border);
+  }
+
+  html {
+    color-scheme: light;
+    scroll-behavior: smooth;
+  }
+
+  html:has([data-theme="dark"]) {
+    color-scheme: dark;
+  }
+
+  body {
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    font-family: var(--font-sans);
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Bangla text runs larger and looser than the Latin beside it — set once,
+     here, never per page. Applies to any element (or subtree) tagged bn. */
+  :lang(bn) {
+    font-family: var(--font-serif-bn);
+    font-size: 1.0625em;
+    line-height: 1.9;
+  }
+
+  h1:lang(bn),
+  h2:lang(bn),
+  h3:lang(bn),
+  h4:lang(bn) {
+    font-family: var(--font-display-bn);
+    line-height: 1.4;
+  }
+
+  a {
+    color: inherit;
+  }
+
+  ::selection {
+    background-color: var(--color-accent);
+    color: var(--color-accent-ink);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}

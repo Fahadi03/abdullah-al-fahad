@@ -1,0 +1,67 @@
+---
+// Vanilla — no framework or hydration directive needed for a single toggle.
+---
+
+<button
+  id="theme-toggle"
+  type="button"
+  aria-label="Toggle dark mode"
+  class="inline-flex h-11 w-11 items-center justify-center rounded-md border border-border text-text transition-colors duration-fast hover:bg-bg-raised"
+>
+  <svg
+    id="theme-toggle-sun"
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="1.5"
+    class="hidden h-5 w-5"
+  >
+    <circle cx="12" cy="12" r="4" />
+    <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+  </svg>
+  <svg
+    id="theme-toggle-moon"
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="1.5"
+    class="hidden h-5 w-5"
+  >
+    <path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z" />
+  </svg>
+</button>
+
+<script>
+  const STORAGE_KEY = "theme";
+  const root = document.documentElement;
+  const button = document.getElementById("theme-toggle")!;
+  const sun = document.getElementById("theme-toggle-sun")!;
+  const moon = document.getElementById("theme-toggle-moon")!;
+
+  function prefersDark(): boolean {
+    return window.matchMedia("(prefers-color-scheme: dark)").matches;
+  }
+
+  function currentTheme(): "light" | "dark" {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored === "light" || stored === "dark") return stored;
+    return prefersDark() ? "dark" : "light";
+  }
+
+  function paintIcon(theme: "light" | "dark") {
+    // Icon shows the theme a click would switch *to*.
+    sun.classList.toggle("hidden", theme !== "dark");
+    moon.classList.toggle("hidden", theme !== "light");
+  }
+
+  paintIcon(currentTheme());
+
+  button.addEventListener("click", () => {
+    const next = currentTheme() === "dark" ? "light" : "dark";
+    root.dataset.theme = next;
+    localStorage.setItem(STORAGE_KEY, next);
+    paintIcon(next);
+  });
+</script>

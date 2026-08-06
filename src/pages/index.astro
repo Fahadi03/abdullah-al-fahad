@@ -1,0 +1,87 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import ThemeToggle from "../components/ThemeToggle.astro";
+import { SITE } from "../config/site";
+---
+
+<BaseLayout
+  title="Home"
+  description="Personal site of Abdullah Al Fahad — writing, videos, and Assembly of Ideas."
+>
+  <header
+    class="flex items-center justify-between border-b border-border px-6 py-4 sm:px-10"
+  >
+    <span class="font-sans text-sm font-medium tracking-wide">{SITE.name}</span>
+    <ThemeToggle />
+  </header>
+
+  <main class="mx-auto max-w-3xl px-6 py-16 sm:px-10">
+    <section class="mb-20">
+      <p class="mb-2 font-sans text-sm text-text-muted">
+        Scaffold check — step 1 of the build order
+      </p>
+      <h1 class="font-serif text-4xl leading-tight text-balance">
+        Astro 5, Tailwind v4, MDX and the Vercel adapter are wired up.
+      </h1>
+      <p class="mt-4 max-w-prose font-serif text-lg text-text-muted">
+        This page exists to prove the foundation renders correctly — the real
+        home page (entry-point cards, recent strip, newsletter) comes in a
+        later step.
+      </p>
+    </section>
+
+    <section class="mb-20 space-y-3 border-t border-border pt-10">
+      <h2 class="font-sans text-sm font-medium uppercase tracking-wide text-text-muted">
+        Type scale — 1.25 ratio
+      </h2>
+      <p class="font-serif text-5xl">Aa 5xl</p>
+      <p class="font-serif text-4xl">Aa 4xl</p>
+      <p class="font-serif text-3xl">Aa 3xl</p>
+      <p class="font-serif text-2xl">Aa 2xl</p>
+      <p class="font-serif text-xl">Aa xl</p>
+      <p class="font-serif text-lg">Aa lg</p>
+      <p class="font-serif text-base">Aa base</p>
+      <p class="font-serif text-sm">Aa sm</p>
+      <p class="font-serif text-xs">Aa xs</p>
+    </section>
+
+    <section class="mb-20 space-y-6 border-t border-border pt-10">
+      <h2 class="font-sans text-sm font-medium uppercase tracking-wide text-text-muted">
+        Bilingual type — Bangla runs larger and looser, set once in the base layer
+      </h2>
+      <div>
+        <p class="font-sans text-sm text-text-muted mb-1">English (Source Serif 4)</p>
+        <p class="font-serif text-lg max-w-prose">
+          Assembly of Ideas began in February 2025 as a home for literature and
+          Bangla historical writing.
+        </p>
+      </div>
+      <div>
+        <p class="font-sans text-sm text-text-muted mb-1">বাংলা (Noto Serif Bengali · Hind Siliguri headings)</p>
+        <div lang="bn" class="max-w-prose">
+          <h3 class="text-xl font-medium mb-2">তত্ত্ব সভা</h3>
+          <p class="text-lg">
+            "অ্যাসেম্বলি অফ আইডিয়াজ — তত্ত্ব সভা" ফেব্রুয়ারি ২০২৫ থেকে সাহিত্য ও
+            বাংলার ঐতিহাসিক রচনার একটি প্ল্যাটফর্ম।
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="space-y-3 border-t border-border pt-10">
+      <h2 class="font-sans text-sm font-medium uppercase tracking-wide text-text-muted">
+        Accent colours
+      </h2>
+      <div class="flex gap-4">
+        <div class="flex flex-col items-start gap-2">
+          <div class="h-12 w-24 rounded-md bg-accent"></div>
+          <p class="font-sans text-xs text-text-muted">Site accent</p>
+        </div>
+        <div class="flex flex-col items-start gap-2">
+          <div class="h-12 w-24 rounded-md bg-assembly-accent"></div>
+          <p class="font-sans text-xs text-text-muted">Assembly accent</p>
+        </div>
+      </div>
+    </section>
+  </main>
+</BaseLayout>
