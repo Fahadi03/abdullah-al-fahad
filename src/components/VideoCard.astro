@@ -1,0 +1,159 @@
+---
+import type { CollectionEntry } from "astro:content";
+import { formatDate } from "../lib/numerals";
+
+interface Props {
+  video: CollectionEntry<"videos">;
+}
+
+const { video } = Astro.props;
+const { title, description, youtubeId, duration, pubDate, topic } = video.data;
+const thumbnail = `https://i.ytimg.com/vi/${youtubeId}/hqdefault.jpg`;
+---
+
+<article class="video-card" data-topic={topic}>
+  <div class="video-facade" data-video-facade data-youtube-id={youtubeId} data-video-title={title}>
+    <button type="button" class="video-play-btn" aria-label={`Play video: ${title}`}>
+      <img src={thumbnail} alt="" loading="lazy" width="480" height="360" />
+      <span class="play-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="currentColor" class="h-6 w-6">
+          <path d="M8 5v14l11-7Z"></path>
+        </svg>
+      </span>
+      <span class="video-duration">{duration}</span>
+    </button>
+  </div>
+  <div class="video-meta">
+    <h3 class="video-title">{title}</h3>
+    <p class="video-description">{description}</p>
+    <div class="video-footer">
+      <time datetime={pubDate.toISOString()}>{formatDate(pubDate, "en")}</time>
+      <span aria-hidden="true">·</span>
+      <span>{topic}</span>
+    </div>
+  </div>
+</article>
+
+<script>
+  // Facade pattern: swap the static thumbnail for a real iframe only once
+  // clicked, so no player ever loads on page view. Lives on the component
+  // (not the page) so every page that renders a VideoCard gets this for free.
+  document.addEventListener("click", (event) => {
+    const facade = (event.target as Element).closest<HTMLElement>("[data-video-facade]");
+    if (!facade) return;
+
+    const youtubeId = facade.dataset.youtubeId;
+    const title = facade.dataset.videoTitle ?? "Video";
+    if (!youtubeId) return;
+
+    const iframe = document.createElement("iframe");
+    iframe.src = `https://www.youtube-nocookie.com/embed/${youtubeId}?autoplay=1`;
+    iframe.title = title;
+    iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
+    iframe.allowFullscreen = true;
+    iframe.loading = "lazy";
+    // Set sizing inline: this element is created at runtime, so it never
+    // gets Astro's scoped-style attribute and the scoped CSS below won't
+    // match it — inline styles are the reliable way to size it.
+    iframe.style.cssText = "display:block; width:100%; height:100%; border:0;";
+
+    facade.replaceChildren(iframe);
+  });
+</script>
+
+<style>
+  .video-card {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+  }
+
+  .video-facade {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    background-color: var(--color-bg-raised);
+  }
+
+  .video-facade iframe {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+
+  .video-play-btn {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  .video-play-btn img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .play-icon {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .play-icon svg {
+    width: 3rem;
+    height: 3rem;
+    padding: 0.75rem;
+    border-radius: 999px;
+    background-color: rgba(20, 18, 15, 0.65);
+    color: #fff;
+    transition: background-color var(--duration-fast) var(--ease-editorial);
+  }
+
+  .video-play-btn:hover .play-icon svg,
+  .video-play-btn:focus-visible .play-icon svg {
+    background-color: var(--color-accent);
+  }
+
+  .video-duration {
+    position: absolute;
+    right: 0.5rem;
+    bottom: 0.5rem;
+    padding: 0.125rem 0.4rem;
+    border-radius: var(--radius-sm);
+    background-color: rgba(20, 18, 15, 0.75);
+    color: #fff;
+    font-family: var(--font-sans);
+    font-size: var(--text-xs);
+  }
+
+  .video-meta {
+    padding: 1.25rem;
+  }
+
+  .video-title {
+    font-family: var(--font-serif);
+    font-size: var(--text-lg);
+    line-height: 1.35;
+  }
+
+  .video-description {
+    margin-top: 0.5rem;
+    font-family: var(--font-serif);
+    font-size: var(--text-base);
+    color: var(--color-text-muted);
+  }
+
+  .video-footer {
+    margin-top: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--font-sans);
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
+  }
+</style>

@@ -30,22 +30,27 @@ npm run preview  # serve the production build locally
 
 ```
 src/
-  components/   ThemeToggle, ... (grows as sections are built)
-  config/       site.ts — SITE_URL, Assembly base path, socials
+  components/   ArticleCard, VideoCard, ShareRow, TableOfContents, ...
+  config/       site.ts (SITE_URL, Assembly base path, socials),
+                featured.ts (drives /start)
   content/
     writings/   articles (.mdx) — the writings collection
     series/     series definitions (.mdx) — the series collection
-  content.config.ts  zod schemas for writings + series
-  layouts/      BaseLayout.astro
-  pages/        index.astro (placeholder — real home page comes later)
+    videos/     videos.yaml — the videos collection (one flat data file)
+  content.config.ts  zod schemas for writings, series, videos
+  layouts/      BaseLayout.astro, ProseLayout.astro (article reading shell)
+  lib/          writings.ts, videos.ts, reading-time.ts, numerals.ts —
+                query/formatting helpers shared across pages
+  pages/        index.astro (home), start.astro, writings/, series/, videos/
   styles/       global.css (entry point), tokens.css (design tokens),
                 fonts.css (generated — see below)
 public/
   fonts/        self-hosted, script-subset woff2 files
 scripts/
-  fetch-fonts.py  one-time helper that (re)generates public/fonts/*.woff2
-                  and src/styles/fonts.css from Google Fonts. The site
-                  itself never talks to the Google Fonts CDN.
+  fetch-fonts.py         regenerates public/fonts/*.woff2 + fonts.css from
+                         Google Fonts (one-time; the site itself never talks
+                         to the Google Fonts CDN)
+  copy-pagefind-output.mjs  post-build step, see "Search" below
 ```
 
 ## Content
@@ -81,6 +86,32 @@ to it, set `series: "my-series"` (the series file's slug) and `seriesOrder`
 See `src/content/series/research-and-ml.mdx` and its two episodes
 (`dataset-ki-o-keno-guruttopurno.mdx`, `model-training-steps.mdx`) for a
 working example.
+
+### Add a video
+
+Add an entry to the array in `src/content/videos/videos.yaml` — no new
+file needed:
+
+```yaml
+- id: my-video-slug
+  title: "Video title"
+  description: "One or two lines."
+  youtubeId: "dQw4w9WgXcQ" # the 11-character id from the YouTube URL
+  duration: "12:34"
+  pubDate: 2026-01-01
+  topic: "Machine Learning" # shown as a filter chip on /videos
+  playlist: "Optional playlist name" # omit if it doesn't belong to one
+```
+
+`/videos` never embeds a YouTube player on page load — `VideoCard` shows
+the thumbnail as a static `<img>` and only injects the iframe once
+clicked (the facade pattern the spec asks for). The file starts as an
+empty array (`[]`); until it has at least one entry, the Videos entry
+card on Home and the video pick on `/start` both show an honest
+"Coming soon" instead of being faked. Astro logs `The collection
+"videos" does not exist or is empty` during `astro build`/`astro check`
+while the file is empty — that's expected, not a build error, and it
+goes away once the array has entries.
 
 ## Fonts
 
@@ -121,6 +152,13 @@ as those integrations are built.
   there's no content for those yet (steps 6–8). The home newsletter
   block is deferred to step 9, alongside the rest of the dynamic layer,
   since that's where the real `NewsletterForm` component gets built.
+- Step 6 — `/videos`: click-to-load facade (thumbnail `<img>` swapped for
+  an iframe only on click, never on page load), topic filter chips,
+  optional playlist grouping. Home's Videos card, the Recent strip, and
+  `/start`'s video pick now query the real `videos` collection instead
+  of hard-coding "Coming soon" — they'll pick up real data the moment
+  `videos.yaml` has entries. Shipped with zero seed videos (see "Add a
+  video" above) rather than fabricated placeholder content. Done.
 
 See `PROMPT.md` for the full build order.
 

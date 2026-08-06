@@ -3,6 +3,7 @@ import { getEntry } from "astro:content";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Header from "../components/Header.astro";
 import ArticleCard from "../components/ArticleCard.astro";
+import VideoCard from "../components/VideoCard.astro";
 import { resolveSeries } from "../lib/writings";
 import { estimateReadingMinutes } from "../lib/reading-time";
 import { FEATURED } from "../config/featured";
@@ -21,6 +22,8 @@ const featuredWritings = (
     }),
   )
 ).filter((pick) => pick !== null);
+
+const featuredVideo = FEATURED.video ? await getEntry("videos", FEATURED.video.slug) : undefined;
 ---
 
 <BaseLayout title="Start here" description="A hand-curated path through the site for a first-time reader.">
@@ -48,9 +51,18 @@ const featuredWritings = (
 
     <section class="mt-14 border-t border-border pt-10">
       <h2 class="mb-6 font-sans text-sm font-medium uppercase tracking-wide text-text-muted">Watch</h2>
-      <div class="coming-soon" aria-disabled="true">
-        <p>A video pick lands here once /videos exists.</p>
-      </div>
+      {
+        featuredVideo ? (
+          <div>
+            <VideoCard video={featuredVideo} />
+            <p class="reason">{FEATURED.video?.reason}</p>
+          </div>
+        ) : (
+          <div class="coming-soon" aria-disabled="true">
+            <p>A video pick lands here once one is featured in src/config/featured.ts.</p>
+          </div>
+        )
+      }
     </section>
 
     <section class="mt-14 border-t border-border pt-10">

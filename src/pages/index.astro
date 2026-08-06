@@ -2,26 +2,33 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Header from "../components/Header.astro";
 import ArticleCard from "../components/ArticleCard.astro";
+import VideoCard from "../components/VideoCard.astro";
 import { getPublishedWritings, getAllSeries, resolveSeries } from "../lib/writings";
+import { getPublishedVideos } from "../lib/videos";
 import { estimateReadingMinutes } from "../lib/reading-time";
 import { formatNumber } from "../lib/numerals";
 import { SITE } from "../config/site";
 
 const writings = await getPublishedWritings();
 const allSeries = await getAllSeries();
+const videos = await getPublishedVideos();
 
 const latestWriting = writings[0];
 const latestWritingSeries = latestWriting ? await resolveSeries(latestWriting) : undefined;
+const latestVideo = videos[0];
 
-// "Recent" mixes articles and videos once /videos exists (build step 6) —
-// for now it's just the latest writings.
-const recent = await Promise.all(
-  writings.slice(0, 4).map(async (entry) => ({
+// "Recent" mixes articles and videos, newest first.
+const recentWritings = await Promise.all(
+  writings.map(async (entry) => ({
+    kind: "writing" as const,
+    date: entry.data.pubDate,
     entry,
     series: await resolveSeries(entry),
     readingMinutes: estimateReadingMinutes(entry.body ?? "", entry.data.lang),
   })),
 );
+const recentVideos = videos.map((video) => ({ kind: "video" as const, date: video.data.pubDate, video }));
+const recent = [...recentWritings, ...recentVideos].sort((a, b) => b.date.valueOf() - a.date.valueOf()).slice(0, 4);
 ---
 
 <BaseLayout title="Home" description={SITE.tagline}>
@@ -38,6 +45,14 @@ const recent = await Promise.all(
         {formatNumber(writings.length, "en")} article{writings.length === 1 ? "" : "s"} · {
           formatNumber(allSeries.length, "en")
         } series
+        {
+          videos.length > 0 && (
+            <>
+              {" "}
+              · {formatNumber(videos.length, "en")} video{videos.length === 1 ? "" : "s"}
+            </>
+          )
+        }
       </p>
     </section>
 
@@ -65,10 +80,20 @@ const recent = await Promise.all(
         <p class="entry-meta">Coming soon</p>
       </div>
 
-      <div class="entry-card" aria-disabled="true">
-        <span class="entry-label">Videos</span>
-        <p class="entry-meta">Coming soon</p>
-      </div>
+      {
+        latestVideo ? (
+          <a href="/videos" class="entry-card">
+            <span class="entry-label">Videos</span>
+            <h2 class="entry-title">{latestVideo.data.title}</h2>
+            <p class="entry-meta">Latest</p>
+          </a>
+        ) : (
+          <div class="entry-card" aria-disabled="true">
+            <span class="entry-label">Videos</span>
+            <p class="entry-meta">Coming soon</p>
+          </div>
+        )
+      }
     </section>
 
     {
@@ -76,9 +101,13 @@ const recent = await Promise.all(
         <section class="border-t border-border py-16">
           <h2 class="mb-8 font-sans text-sm font-medium uppercase tracking-wide text-text-muted">Recent</h2>
           <div class="grid gap-6 sm:grid-cols-2">
-            {recent.map(({ entry, series, readingMinutes }) => (
-              <ArticleCard entry={entry} series={series} readingMinutes={readingMinutes} />
-            ))}
+            {recent.map((item) =>
+              item.kind === "writing" ? (
+                <ArticleCard entry={item.entry} series={item.series} readingMinutes={item.readingMinutes} />
+              ) : (
+                <VideoCard video={item.video} />
+              ),
+            )}
           </div>
         </section>
       )

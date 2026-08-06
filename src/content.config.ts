@@ -1,5 +1,5 @@
 import { defineCollection, reference, z } from "astro:content";
-import { glob } from "astro/loaders";
+import { glob, file } from "astro/loaders";
 
 const writings = defineCollection({
   loader: glob({ pattern: "**/*.mdx", base: "./src/content/writings" }),
@@ -30,4 +30,20 @@ const series = defineCollection({
   }),
 });
 
-export const collections = { writings, series };
+const videos = defineCollection({
+  // A flat data file, not MDX — video entries are metadata, no long-form body.
+  loader: file("src/content/videos/videos.yaml"),
+  schema: z.object({
+    title: z.string(),
+    description: z.string(),
+    youtubeId: z.string(),
+    duration: z.string(),
+    pubDate: z.coerce.date(),
+    topic: z.string(),
+    // Groups videos into an optional named playlist section on /videos.
+    playlist: z.string().optional(),
+    draft: z.boolean().default(false),
+  }),
+});
+
+export const collections = { writings, series, videos };

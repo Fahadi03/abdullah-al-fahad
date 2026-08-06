@@ -1,0 +1,14 @@
+# Video library — one entry per video, newest or oldest in any order (the
+# page sorts by pubDate). See README.md "Add a video" for the field list.
+#
+# - id: my-video-slug
+#   title: "Video title"
+#   description: "One or two lines."
+#   youtubeId: "dQw4w9WgXcQ" # the 11-character id from the YouTube URL
+#   duration: "12:34"
+#   pubDate: 2026-01-01
+#   topic: "Machine Learning"
+#   playlist: "Optional playlist name" # omit if it doesn't belong to one
+#
+# Empty for now — no real videos to list yet.
+[]
