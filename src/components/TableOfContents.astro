@@ -1,0 +1,116 @@
+---
+import type { MarkdownHeading } from "astro";
+
+interface Props {
+  headings: MarkdownHeading[];
+}
+
+const { headings } = Astro.props;
+const items = headings.filter((h) => h.depth === 2 || h.depth === 3);
+---
+
+{
+  items.length > 0 && (
+    <details class="toc" open>
+      <summary class="toc-summary">On this page</summary>
+      <ul class="toc-list">
+        {items.map((h) => (
+          <li class:list={["toc-item", h.depth === 3 && "toc-item-sub"]}>
+            <a href={`#${h.slug}`} data-toc-link={h.slug}>
+              {h.text}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </details>
+  )
+}
+
+<style>
+  .toc {
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+  }
+
+  .toc-summary {
+    cursor: pointer;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    color: var(--color-text-muted);
+    font-size: var(--text-xs);
+    margin-bottom: 0.75rem;
+  }
+
+  .toc-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    border-left: 1px solid var(--color-border);
+  }
+
+  .toc-item a {
+    display: block;
+    padding-block: 0.125rem;
+    padding-left: 0.875rem;
+    margin-left: -1px;
+    border-left: 1px solid transparent;
+    color: var(--color-text-muted);
+    transition: color var(--duration-fast) var(--ease-editorial);
+  }
+
+  .toc-item-sub a {
+    padding-left: 1.625rem;
+  }
+
+  .toc-item a:hover {
+    color: var(--color-text);
+  }
+
+  .toc-item a.toc-active {
+    color: var(--color-accent);
+    border-left-color: var(--color-accent);
+  }
+
+  @media (min-width: 1024px) {
+    .toc {
+      position: sticky;
+      top: 6rem;
+    }
+
+    .toc-summary {
+      display: none;
+    }
+
+    .toc:not([open]) > :not(summary) {
+      display: flex;
+    }
+  }
+</style>
+
+<script>
+  const links = document.querySelectorAll<HTMLAnchorElement>("[data-toc-link]");
+
+  if (links.length > 0) {
+    const linkByHeadingId = new Map<string, HTMLAnchorElement>();
+    links.forEach((link) => {
+      const id = link.getAttribute("data-toc-link");
+      if (id) linkByHeadingId.set(id, link);
+    });
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          const link = linkByHeadingId.get(entry.target.id);
+          if (link) link.classList.toggle("toc-active", entry.isIntersecting);
+        }
+      },
+      { rootMargin: "-96px 0px -70% 0px" },
+    );
+
+    linkByHeadingId.forEach((_link, id) => {
+      const heading = document.getElementById(id);
+      if (heading) observer.observe(heading);
+    });
+  }
+</script>

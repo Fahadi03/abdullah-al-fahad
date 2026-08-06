@@ -1,0 +1,104 @@
+---
+import type { CollectionEntry } from "astro:content";
+import { formatNumber } from "../lib/numerals";
+
+interface Props {
+  episodes: CollectionEntry<"writings">[];
+  current: CollectionEntry<"writings">;
+}
+
+const { episodes, current } = Astro.props;
+const index = episodes.findIndex((entry) => entry.id === current.id);
+const prev = index > 0 ? episodes[index - 1] : undefined;
+const next = index >= 0 && index < episodes.length - 1 ? episodes[index + 1] : undefined;
+const lang = current.data.lang;
+---
+
+{
+  episodes.length > 1 && index >= 0 && (
+    <nav aria-label="Series navigation" class="series-nav" lang={lang}>
+      <p class="series-nav-label">
+        {lang === "bn"
+          ? `পর্ব ${formatNumber(index + 1, "bn")} এর ${formatNumber(episodes.length, "bn")}`
+          : `Episode ${index + 1} of ${episodes.length}`}
+      </p>
+      <div class="series-nav-links">
+        {prev ? (
+          <a href={`/writings/${prev.id}`} class="series-nav-link" lang={prev.data.lang}>
+            <span class="series-nav-direction">{lang === "bn" ? "← আগের পর্ব" : "← Previous"}</span>
+            <span class="series-nav-title">{prev.data.title}</span>
+          </a>
+        ) : (
+          <span />
+        )}
+        {next ? (
+          <a href={`/writings/${next.id}`} class="series-nav-link series-nav-link-next" lang={next.data.lang}>
+            <span class="series-nav-direction">{lang === "bn" ? "পরের পর্ব →" : "Next →"}</span>
+            <span class="series-nav-title">{next.data.title}</span>
+          </a>
+        ) : (
+          <span />
+        )}
+      </div>
+    </nav>
+  )
+}
+
+<style>
+  .series-nav {
+    border-top: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border);
+    padding-block: 1.5rem;
+    margin-block: 3rem;
+  }
+
+  .series-nav-label {
+    font-family: var(--font-sans);
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
+    margin-bottom: 1rem;
+  }
+
+  .series-nav-links {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+
+  .series-nav-link {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .series-nav-link-next {
+    text-align: right;
+    grid-column: 2;
+  }
+
+  .series-nav-direction {
+    font-family: var(--font-sans);
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
+  }
+
+  .series-nav-title {
+    font-family: var(--font-serif);
+    font-size: var(--text-lg);
+    transition: color var(--duration-fast) var(--ease-editorial);
+  }
+
+  .series-nav-link:hover .series-nav-title {
+    color: var(--color-accent);
+  }
+
+  @media (max-width: 640px) {
+    .series-nav-links {
+      grid-template-columns: 1fr;
+    }
+    .series-nav-link-next {
+      text-align: left;
+      grid-column: 1;
+    }
+  }
+</style>

@@ -1,0 +1,52 @@
+---
+interface Props {
+  label?: string;
+}
+
+const { label } = Astro.props;
+---
+
+<span class="footnote">
+  <button type="button" class="footnote-trigger" data-footnote-trigger aria-expanded="false"
+    ><sup>{label ?? "note"}</sup></button
+  >
+  <span class="footnote-content" data-footnote-content hidden role="note"><slot /></span>
+</span>
+
+<style>
+  .footnote-trigger {
+    color: var(--color-accent);
+    font-family: var(--font-sans);
+    text-decoration: underline;
+    text-decoration-style: dotted;
+    text-underline-offset: 2px;
+  }
+
+  .footnote-content {
+    display: block;
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+    background-color: var(--color-bg-raised);
+    border-left: 2px solid var(--color-accent);
+    padding: 0.75rem 1rem;
+    margin-block: 0.75rem;
+    border-radius: var(--radius-sm);
+  }
+
+  .footnote-content[hidden] {
+    display: none;
+  }
+</style>
+
+<script>
+  document.addEventListener("click", (event) => {
+    const trigger = (event.target as Element).closest("[data-footnote-trigger]");
+    if (!trigger) return;
+    const content = trigger.nextElementSibling as HTMLElement | null;
+    if (!content) return;
+    const expanded = trigger.getAttribute("aria-expanded") === "true";
+    trigger.setAttribute("aria-expanded", String(!expanded));
+    content.hidden = expanded;
+  });
+</script>

@@ -1,0 +1,68 @@
+---
+import type { MarkdownHeading } from "astro";
+import BaseLayout from "./BaseLayout.astro";
+import Header from "../components/Header.astro";
+import ReadingProgressBar from "../components/ReadingProgressBar.astro";
+import TableOfContents from "../components/TableOfContents.astro";
+import type { Locale } from "../config/site";
+
+interface Props {
+  title: string;
+  description: string;
+  lang: Locale;
+  headings: MarkdownHeading[];
+}
+
+const { title, description, lang, headings } = Astro.props;
+---
+
+<BaseLayout title={title} description={description} lang={lang}>
+  <ReadingProgressBar />
+  <Header />
+  <main class="mx-auto max-w-5xl px-6 py-12 sm:px-10 sm:py-16">
+    <div class="article-grid">
+      <div class="article-main">
+        <slot />
+      </div>
+      <aside class="article-toc">
+        <TableOfContents headings={headings} />
+      </aside>
+    </div>
+  </main>
+</BaseLayout>
+
+<style>
+  .article-grid {
+    display: grid;
+    gap: 3rem;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  @media (min-width: 1024px) {
+    .article-grid {
+      grid-template-columns: minmax(0, 1fr) 220px;
+      align-items: start;
+    }
+  }
+</style>
+
+<script>
+  document.addEventListener("click", async (event) => {
+    const button = (event.target as Element).closest("[data-copy-code]");
+    if (!button) return;
+
+    const block = button.closest(".code-block");
+    const code = block?.querySelector("pre")?.textContent ?? "";
+
+    try {
+      await navigator.clipboard.writeText(code);
+      const original = button.textContent;
+      button.textContent = "Copied";
+      setTimeout(() => {
+        button.textContent = original;
+      }, 2000);
+    } catch {
+      // Clipboard API unavailable — nothing else to fall back to here.
+    }
+  });
+</script>

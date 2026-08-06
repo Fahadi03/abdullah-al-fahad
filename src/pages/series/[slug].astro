@@ -1,0 +1,189 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Header from "../../components/Header.astro";
+import LanguageChip from "../../components/LanguageChip.astro";
+import { getAllSeries, getSeriesEpisodes } from "../../lib/writings";
+import { formatDate, formatMinutes, formatNumber } from "../../lib/numerals";
+import { estimateReadingMinutes } from "../../lib/reading-time";
+
+export async function getStaticPaths() {
+  const allSeries = await getAllSeries();
+  return Promise.all(
+    allSeries.map(async (series) => {
+      const episodes = await getSeriesEpisodes(series.id);
+      return { params: { slug: series.id }, props: { series, episodes } };
+    }),
+  );
+}
+
+const { series, episodes } = Astro.props;
+const lang = series.data.lang;
+---
+
+<BaseLayout title={series.data.title} description={series.data.description} lang={lang}>
+  <Header />
+  <main class="mx-auto max-w-3xl px-6 py-12 sm:px-10 sm:py-16">
+    <LanguageChip lang={lang} />
+    <h1 class="mt-4 font-serif text-4xl leading-tight text-balance sm:text-5xl" lang={lang}>
+      {series.data.title}
+    </h1>
+    <p class="mt-4 max-w-prose font-serif text-lg text-text-muted" lang={lang}>
+      {series.data.description}
+    </p>
+
+    <div class="series-progress" data-series-progress data-lang={lang}>
+      <div class="series-progress-track">
+        <div class="series-progress-fill" data-progress-fill></div>
+      </div>
+      <p class="series-progress-label" data-progress-label></p>
+    </div>
+
+    <ol class="episode-list">
+      {
+        episodes.map((episode, index) => (
+          <li>
+            <a href={`/writings/${episode.id}`} class="episode-item" data-episode-link={episode.id}>
+              <span class="episode-number" lang={lang}>
+                {formatNumber(index + 1, lang)}
+              </span>
+              <span class="episode-body">
+                <span class="episode-title" lang={episode.data.lang}>
+                  {episode.data.title}
+                </span>
+                <span class="episode-meta">
+                  {formatDate(episode.data.pubDate, episode.data.lang)} ·{" "}
+                  {formatMinutes(estimateReadingMinutes(episode.body ?? "", episode.data.lang), episode.data.lang)}
+                </span>
+              </span>
+              <span class="episode-read-indicator" data-read-indicator hidden aria-label="Read">
+                ✓
+              </span>
+            </a>
+          </li>
+        ))
+      }
+    </ol>
+  </main>
+</BaseLayout>
+
+<style>
+  .series-progress {
+    margin-top: 2.5rem;
+  }
+
+  .series-progress-track {
+    height: 4px;
+    border-radius: 999px;
+    background-color: var(--color-border);
+    overflow: hidden;
+  }
+
+  .series-progress-fill {
+    height: 100%;
+    width: 0%;
+    background-color: var(--color-accent);
+    transition: width var(--duration-slow) var(--ease-editorial);
+  }
+
+  .series-progress-label {
+    margin-top: 0.5rem;
+    font-family: var(--font-sans);
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
+  }
+
+  .episode-list {
+    margin-top: 2rem;
+    display: flex;
+    flex-direction: column;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .episode-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding-block: 1.25rem;
+    border-bottom: 1px solid var(--color-border);
+    transition: background-color var(--duration-fast) var(--ease-editorial);
+  }
+
+  .episode-item:hover {
+    background-color: var(--color-bg-raised);
+  }
+
+  .episode-number {
+    flex-shrink: 0;
+    width: 2rem;
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+  }
+
+  .episode-body {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .episode-title {
+    font-family: var(--font-serif);
+    font-size: var(--text-lg);
+  }
+
+  .episode-meta {
+    font-family: var(--font-sans);
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
+  }
+
+  .episode-read-indicator {
+    flex-shrink: 0;
+    color: var(--color-accent);
+  }
+
+  .episode-read-indicator[hidden] {
+    display: none;
+  }
+</style>
+
+<script>
+  const BN_DIGITS = ["০", "১", "২", "৩", "৪", "৫", "৬", "৭", "৮", "৯"];
+
+  function localizeNumber(value: number, lang: string): string {
+    const str = String(value);
+    return lang === "bn" ? str.replace(/[0-9]/g, (d) => BN_DIGITS[Number(d)]) : str;
+  }
+
+  try {
+    const opened = new Set<string>(JSON.parse(localStorage.getItem("opened-writings") ?? "[]"));
+    const links = document.querySelectorAll<HTMLAnchorElement>("[data-episode-link]");
+    let readCount = 0;
+
+    links.forEach((link) => {
+      const id = link.dataset.episodeLink;
+      if (id && opened.has(id)) {
+        link.classList.add("is-read");
+        link.querySelector<HTMLElement>("[data-read-indicator]")?.removeAttribute("hidden");
+        readCount++;
+      }
+    });
+
+    const progress = document.querySelector<HTMLElement>("[data-series-progress]");
+    const lang = progress?.dataset.lang ?? "en";
+    const total = links.length;
+    const fill = document.querySelector<HTMLElement>("[data-progress-fill]");
+    const label = document.querySelector<HTMLElement>("[data-progress-label]");
+
+    if (fill) fill.style.width = total > 0 ? `${(readCount / total) * 100}%` : "0%";
+    if (label) {
+      label.textContent =
+        lang === "bn"
+          ? `${localizeNumber(readCount, lang)} এর ${localizeNumber(total, lang)} পড়া হয়েছে`
+          : `${readCount} of ${total} read`;
+    }
+  } catch {
+    // localStorage unavailable — progress indicator just stays at zero.
+  }
+</script>

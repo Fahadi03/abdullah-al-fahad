@@ -105,5 +105,13 @@ as those integrations are built.
 - Step 1 — scaffold, tokens, base layout, bilingual fonts, dark mode. Done.
 - Step 2 — content collections + zod schemas; seed content (two Bangla
   articles forming a series, one English article). Done.
+- Step 3 — `/writings`, `/writings/[slug]`, `/series/[slug]`: grid/list
+  toggle, language/tag/series filter chips, TOC with active-section
+  highlighting, reading-progress bar, series prev/next nav, related
+  articles, share row (Facebook/WhatsApp/LinkedIn/copy/native), Shiki
+  code blocks with a copy button and filename label, `Callout` and
+  `Footnote` MDX components, series reading-progress indicator
+  (`localStorage`, no accounts). Done. Pagefind search is step 4, not
+  yet wired up — the filter chips above are plain client-side JS.
 
 See `PROMPT.md` for the full build order.

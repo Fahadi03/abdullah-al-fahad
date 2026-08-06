@@ -1,0 +1,20 @@
+---
+import type { Locale } from "../config/site";
+
+interface Props {
+  lang: Locale;
+  class?: string;
+}
+
+const { lang, class: className } = Astro.props;
+const label = lang === "bn" ? "বাংলা" : "English";
+---
+
+<span
+  class:list={[
+    "inline-flex items-center rounded-full border border-border px-2 py-0.5 font-sans text-xs text-text-muted",
+    className,
+  ]}
+>
+  {label}
+</span>

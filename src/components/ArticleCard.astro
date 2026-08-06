@@ -1,0 +1,39 @@
+---
+import type { CollectionEntry } from "astro:content";
+import LanguageChip from "./LanguageChip.astro";
+import { formatDate, formatMinutes } from "../lib/numerals";
+
+interface Props {
+  entry: CollectionEntry<"writings">;
+  series?: CollectionEntry<"series">;
+  readingMinutes: number;
+}
+
+const { entry, series, readingMinutes } = Astro.props;
+const { title, description, lang, pubDate } = entry.data;
+---
+
+<a
+  href={`/writings/${entry.id}`}
+  class="article-card group block rounded-md border border-border p-6 transition-colors duration-fast hover:border-accent"
+  data-lang={lang}
+  data-tags={entry.data.tags.join(",")}
+  data-series={series?.id ?? ""}
+>
+  <div class="mb-3 flex flex-wrap items-center gap-2">
+    <LanguageChip lang={lang} />
+    {series && <span class="font-sans text-xs text-text-muted">{series.data.title}</span>}
+  </div>
+  <h3
+    class="font-serif text-2xl leading-snug text-balance transition-colors duration-fast group-hover:text-accent"
+    lang={lang}
+  >
+    {title}
+  </h3>
+  <p class="mt-2 line-clamp-2 font-serif text-text-muted" lang={lang}>{description}</p>
+  <div class="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 font-sans text-xs text-text-muted">
+    <time datetime={pubDate.toISOString()}>{formatDate(pubDate, lang)}</time>
+    <span aria-hidden="true">·</span>
+    <span>{formatMinutes(readingMinutes, lang)}</span>
+  </div>
+</a>
