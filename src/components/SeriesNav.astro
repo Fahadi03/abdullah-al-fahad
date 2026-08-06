@@ -16,7 +16,7 @@ const lang = current.data.lang;
 
 {
   episodes.length > 1 && index >= 0 && (
-    <nav aria-label="Series navigation" class="series-nav" lang={lang}>
+    <nav aria-label="Series navigation" class="series-nav" lang={lang} data-pagefind-ignore>
       <p class="series-nav-label">
         {lang === "bn"
           ? `পর্ব ${formatNumber(index + 1, "bn")} এর ${formatNumber(episodes.length, "bn")}`

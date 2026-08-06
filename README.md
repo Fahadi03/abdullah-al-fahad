@@ -111,7 +111,31 @@ as those integrations are built.
   articles, share row (Facebook/WhatsApp/LinkedIn/copy/native), Shiki
   code blocks with a copy button and filename label, `Callout` and
   `Footnote` MDX components, series reading-progress indicator
-  (`localStorage`, no accounts). Done. Pagefind search is step 4, not
-  yet wired up — the filter chips above are plain client-side JS.
+  (`localStorage`, no accounts). Done.
+- Step 4 — Pagefind search on `/writings`, indexed at build time and
+  combined with the language/tag/series filter chips. Done.
 
 See `PROMPT.md` for the full build order.
+
+## Search (Pagefind)
+
+`npm run build` runs `astro build`, then the `pagefind` CLI indexes
+`dist/`, then a small script copies the generated `dist/pagefind/`
+bundle into `.vercel/output/static/pagefind` (the adapter copies `dist/`
+to `.vercel/output/static` as part of `astro build`, before the
+`pagefind` step runs — so this copy keeps the deployed output in sync).
+
+Only `/writings/[slug]` pages are indexed (via `data-pagefind-body` on
+the article element in `src/pages/writings/[slug].astro`); the listing
+page and its cards are excluded on purpose, so a search only ever
+surfaces one result per article. The site is indexed with
+`--force-language en`: Pagefind indexes bn and en as separate,
+non-merged indexes by default, and the JS API only loads the index
+matching the current page's `lang` — since the search box lives on
+`/writings` (`lang="en"`), Bangla results would silently never appear
+without this flag. Bangla has no stemming support in Pagefind either
+way, so forcing English costs nothing there.
+
+The index only exists after a full `npm run build` — `astro dev` has no
+`/pagefind/pagefind.js` to fetch, so the search input on `/writings`
+stays disabled with an explanatory placeholder in dev.

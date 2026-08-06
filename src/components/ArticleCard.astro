@@ -16,6 +16,7 @@ const { title, description, lang, pubDate } = entry.data;
 <a
   href={`/writings/${entry.id}`}
   class="article-card group block rounded-md border border-border p-6 transition-colors duration-fast hover:border-accent"
+  data-slug={entry.id}
   data-lang={lang}
   data-tags={entry.data.tags.join(",")}
   data-series={series?.id ?? ""}
