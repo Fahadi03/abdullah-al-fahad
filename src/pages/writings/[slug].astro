@@ -6,6 +6,7 @@ import SeriesNav from "../../components/SeriesNav.astro";
 import ShareRow from "../../components/ShareRow.astro";
 import ViewCount from "../../components/ViewCount.astro";
 import ReactionButton from "../../components/ReactionButton.astro";
+import CommentSection from "../../components/CommentSection.astro";
 import LanguageChip from "../../components/LanguageChip.astro";
 import Callout from "../../components/Callout.astro";
 import Footnote from "../../components/Footnote.astro";
@@ -98,6 +99,8 @@ const canonicalUrl = new URL(`/writings/${entry.id}`, SITE.url).toString();
         </section>
       )
     }
+
+    <CommentSection pageId={entry.id} pageUrl={canonicalUrl} pageTitle={entry.data.title} />
   </article>
 </ProseLayout>
 

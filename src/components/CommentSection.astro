@@ -1,0 +1,101 @@
+---
+interface Props {
+  /** Stable id, independent of URL — e.g. entry.id, or `assembly:${entry.id}`. */
+  pageId: string;
+  pageUrl: string;
+  pageTitle: string;
+}
+
+const { pageId, pageUrl, pageTitle } = Astro.props;
+const appId = import.meta.env.PUBLIC_CUSDIS_APP_ID;
+const host = import.meta.env.PUBLIC_CUSDIS_HOST || "https://cusdis.com";
+---
+
+<section class="comments" data-pagefind-ignore>
+  <h2 class="comments-heading">Comments <span lang="bn">— মন্তব্য</span></h2>
+
+  {
+    appId ? (
+      <div class="comments-frame" data-comments-frame data-app-id={appId} data-host={host} data-page-id={pageId} data-page-url={pageUrl} data-page-title={pageTitle}>
+        <div class="comments-placeholder" data-comments-placeholder>Loading comments…</div>
+      </div>
+    ) : (
+      <p class="comments-empty">
+        Comments aren't set up yet. <span lang="bn">মন্তব্যের ব্যবস্থা এখনো চালু হয়নি।</span>
+      </p>
+    )
+  }
+</section>
+
+<style>
+  .comments {
+    margin-top: 4rem;
+    padding-top: 2.5rem;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .comments-heading {
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    color: var(--color-text-muted);
+  }
+
+  .comments-heading span {
+    text-transform: none;
+    letter-spacing: normal;
+  }
+
+  .comments-empty,
+  .comments-placeholder {
+    margin-top: 1.25rem;
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+  }
+
+  .comments-frame {
+    margin-top: 1.25rem;
+  }
+</style>
+
+<script>
+  // Loaded on scroll-into-view (the spirit of client:visible for a plain
+  // Astro component — Cusdis's script never runs, let alone blocks first
+  // paint, until the visitor actually scrolls this far).
+  const frames = document.querySelectorAll<HTMLElement>("[data-comments-frame]");
+  if (frames.length > 0) {
+    const theme = document.documentElement.dataset.theme === "dark" ? "dark" : "light";
+
+    const observer = new IntersectionObserver(
+      (entries, obs) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          const frame = entry.target as HTMLElement;
+          obs.unobserve(frame);
+
+          const thread = document.createElement("div");
+          thread.id = "cusdis_thread";
+          thread.dataset.host = frame.dataset.host;
+          thread.dataset.appId = frame.dataset.appId;
+          thread.dataset.pageId = frame.dataset.pageId;
+          thread.dataset.pageUrl = frame.dataset.pageUrl;
+          thread.dataset.pageTitle = frame.dataset.pageTitle;
+          thread.dataset.theme = theme;
+          frame.replaceChildren(thread);
+
+          const script = document.createElement("script");
+          script.src = `${frame.dataset.host}/js/cusdis.es.js`;
+          script.async = true;
+          script.defer = true;
+          document.body.appendChild(script);
+        }
+      },
+      { rootMargin: "200px" },
+    );
+
+    frames.forEach((frame) => observer.observe(frame));
+  }
+</script>

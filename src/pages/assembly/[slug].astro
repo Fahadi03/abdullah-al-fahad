@@ -5,6 +5,7 @@ import LanguageChip from "../../components/LanguageChip.astro";
 import ShareRow from "../../components/ShareRow.astro";
 import ViewCount from "../../components/ViewCount.astro";
 import ReactionButton from "../../components/ReactionButton.astro";
+import CommentSection from "../../components/CommentSection.astro";
 import { formatDate } from "../../lib/numerals";
 import { SITE } from "../../config/site";
 
@@ -48,6 +49,8 @@ const canonicalUrl = new URL(`${SITE.assemblyBase}/${entry.id}`, SITE.url).toStr
     <div class="prose" lang={entry.data.lang}>
       <Content />
     </div>
+
+    <CommentSection pageId={`assembly:${entry.id}`} pageUrl={canonicalUrl} pageTitle={entry.data.title} />
   </main>
 </AssemblyLayout>
 
