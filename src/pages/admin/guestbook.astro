@@ -1,0 +1,120 @@
+---
+export const prerender = false;
+
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getPendingEntries } from "../../lib/guestbook";
+import { formatDate } from "../../lib/numerals";
+
+const token = Astro.url.searchParams.get("token") ?? "";
+const adminToken = import.meta.env.GUESTBOOK_ADMIN_TOKEN;
+const authorized = Boolean(adminToken) && token === adminToken;
+
+const pending = authorized ? await getPendingEntries() : [];
+---
+
+<BaseLayout title="Guestbook moderation" description="">
+  <main class="mx-auto max-w-2xl px-6 py-12 sm:px-10 sm:py-16">
+    {
+      !authorized ? (
+        <p class="font-sans text-sm text-text-muted">Not found.</p>
+      ) : (
+        <>
+          <h1 class="font-serif text-3xl">Guestbook moderation</h1>
+          <p class="mt-2 font-sans text-sm text-text-muted">{pending.length} pending</p>
+
+          <div class="entries">
+            {pending.length === 0 ? (
+              <p class="empty-state">Nothing waiting.</p>
+            ) : (
+              pending.map((entry) => (
+                <article class="entry">
+                  <p class="entry-message">{entry.message}</p>
+                  <p class="entry-meta">
+                    {entry.name} · {formatDate(new Date(entry.createdAt), "en")}
+                  </p>
+                  <div class="entry-actions">
+                    <form method="POST" action="/api/guestbook/moderate">
+                      <input type="hidden" name="token" value={token} />
+                      <input type="hidden" name="id" value={entry.id} />
+                      <input type="hidden" name="action" value="approve" />
+                      <button type="submit" class="approve-button">
+                        Approve
+                      </button>
+                    </form>
+                    <form method="POST" action="/api/guestbook/moderate">
+                      <input type="hidden" name="token" value={token} />
+                      <input type="hidden" name="id" value={entry.id} />
+                      <input type="hidden" name="action" value="reject" />
+                      <button type="submit" class="reject-button">
+                        Reject
+                      </button>
+                    </form>
+                  </div>
+                </article>
+              ))
+            )}
+          </div>
+        </>
+      )
+    }
+  </main>
+</BaseLayout>
+
+<style>
+  .entries {
+    margin-top: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .entry {
+    padding: 1.25rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+  }
+
+  .entry-message {
+    font-family: var(--font-serif);
+    font-size: var(--text-lg);
+  }
+
+  .entry-meta {
+    margin-top: 0.5rem;
+    font-family: var(--font-sans);
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
+  }
+
+  .entry-actions {
+    margin-top: 1rem;
+    display: flex;
+    gap: 0.75rem;
+  }
+
+  .approve-button,
+  .reject-button {
+    height: 2.5rem;
+    padding-inline: 1rem;
+    border-radius: var(--radius-md);
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+  }
+
+  .approve-button {
+    background-color: var(--color-accent);
+    color: var(--color-accent-ink);
+  }
+
+  .reject-button {
+    border: 1px solid var(--color-border);
+    color: var(--color-text-muted);
+  }
+
+  .empty-state {
+    margin-top: 2rem;
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+  }
+</style>

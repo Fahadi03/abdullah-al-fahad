@@ -1,0 +1,297 @@
+---
+export const prerender = false;
+
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Header from "../components/Header.astro";
+import { getApprovedEntries } from "../lib/guestbook";
+import { formatDate } from "../lib/numerals";
+
+const entries = await getApprovedEntries();
+const sent = Astro.url.searchParams.get("sent");
+
+function hasBangla(text: string): boolean {
+  return /[ঀ-৿]/.test(text);
+}
+---
+
+<BaseLayout title="Guestbook" description="Leave a short note — moderated before it appears.">
+  <Header />
+
+  <main class="mx-auto max-w-2xl px-6 py-12 sm:px-10 sm:py-16">
+    <h1 class="font-serif text-4xl leading-tight text-balance">Guestbook</h1>
+    <p class="mt-3 max-w-prose font-serif text-lg text-text-muted">
+      Leave a short note. Nothing fancy — just a name and a line, moderated before it shows up here.
+    </p>
+
+    {
+      sent === "1" && (
+        <p class="banner banner-success" role="status">
+          Thanks — your note is awaiting approval before it shows up here.
+        </p>
+      )
+    }
+    {
+      sent === "0" && (
+        <p class="banner banner-error" role="alert">
+          Something went wrong saving that. Try again below.
+        </p>
+      )
+    }
+
+    <form method="POST" action="/api/guestbook" class="guestbook-form" data-guestbook-form novalidate>
+      <div class="field">
+        <label for="name">Name</label>
+        <input type="text" id="name" name="name" autocomplete="name" required />
+        <p class="field-error" data-error-for="name" hidden></p>
+      </div>
+
+      <div class="field">
+        <label for="message">Message</label>
+        <textarea id="message" name="message" rows="3" required></textarea>
+        <p class="field-error" data-error-for="message" hidden></p>
+      </div>
+
+      <div class="honeypot" aria-hidden="true">
+        <label for="company">Company</label>
+        <input type="text" id="company" name="company" tabindex="-1" autocomplete="off" />
+      </div>
+      <input type="hidden" name="startedAt" data-started-at value="" />
+
+      <p class="form-error" data-form-error hidden></p>
+
+      <button type="submit" class="submit-button" data-submit-button>Sign the guestbook</button>
+    </form>
+
+    <div class="entries">
+      {
+        entries.length === 0 ? (
+          <p class="empty-state">No entries yet — be the first.</p>
+        ) : (
+          entries.map((entry) => (
+            <article class="entry">
+              <p class="entry-message" lang={hasBangla(entry.message) ? "bn" : undefined}>
+                {entry.message}
+              </p>
+              <p class="entry-meta">
+                <span class="entry-name" lang={hasBangla(entry.name) ? "bn" : undefined}>
+                  {entry.name}
+                </span>
+                <span aria-hidden="true"> · </span>
+                <time datetime={new Date(entry.createdAt).toISOString()}>
+                  {formatDate(new Date(entry.createdAt), "en")}
+                </time>
+              </p>
+            </article>
+          ))
+        )
+      }
+    </div>
+  </main>
+</BaseLayout>
+
+<style>
+  .banner {
+    margin-top: 2rem;
+    padding: 1rem 1.25rem;
+    border-radius: var(--radius-md);
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+  }
+
+  .banner-success {
+    background-color: var(--color-bg-raised);
+    border: 1px solid var(--color-accent);
+    color: var(--color-text);
+  }
+
+  .banner-error {
+    background-color: var(--color-bg-raised);
+    border: 1px solid #b3541e;
+    color: var(--color-text);
+  }
+
+  .guestbook-form {
+    margin-top: 2.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    padding-bottom: 2.5rem;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .field label {
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+  }
+
+  .field input,
+  .field textarea {
+    width: 100%;
+    min-height: 44px;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+  }
+
+  .field textarea {
+    resize: vertical;
+  }
+
+  .field input:focus-visible,
+  .field textarea:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  .field-error,
+  .form-error {
+    font-family: var(--font-sans);
+    font-size: var(--text-xs);
+    color: #b3541e;
+  }
+
+  .honeypot {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+
+  .submit-button {
+    align-self: flex-start;
+    height: 2.75rem;
+    padding-inline: 1.5rem;
+    border-radius: var(--radius-md);
+    background-color: var(--color-accent);
+    color: var(--color-accent-ink);
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    font-weight: 500;
+    transition: opacity var(--duration-fast) var(--ease-editorial);
+  }
+
+  .submit-button:disabled {
+    opacity: 0.6;
+  }
+
+  .entries {
+    margin-top: 2.5rem;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .entry {
+    padding: 1.25rem 1.5rem;
+    border-radius: var(--radius-md);
+  }
+
+  .entry:nth-child(odd) {
+    background-color: var(--color-bg-raised);
+  }
+
+  .entry + .entry {
+    margin-top: 0.75rem;
+  }
+
+  .entry-message {
+    font-family: var(--font-serif);
+    font-size: var(--text-lg);
+  }
+
+  .entry-meta {
+    margin-top: 0.5rem;
+    font-family: var(--font-sans);
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
+  }
+
+  .entry-name {
+    font-weight: 500;
+  }
+
+  .empty-state {
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+  }
+</style>
+
+<script>
+  const startedAtInput = document.querySelector<HTMLInputElement>("[data-started-at]");
+  if (startedAtInput) startedAtInput.value = String(Date.now());
+
+  const form = document.querySelector<HTMLFormElement>("[data-guestbook-form]");
+  const submitButton = document.querySelector<HTMLButtonElement>("[data-submit-button]");
+  const formError = document.querySelector<HTMLElement>("[data-form-error]");
+
+  function clearErrors() {
+    form?.querySelectorAll<HTMLElement>("[data-error-for]").forEach((el) => {
+      el.hidden = true;
+      el.textContent = "";
+    });
+    if (formError) {
+      formError.hidden = true;
+      formError.textContent = "";
+    }
+  }
+
+  form?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    clearErrors();
+    if (submitButton) submitButton.disabled = true;
+
+    try {
+      const formData = new FormData(form);
+      const body = Object.fromEntries(formData.entries());
+      const res = await fetch("/api/guestbook", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const data: { ok: boolean; errors?: Record<string, string>; formError?: string } = await res.json();
+
+      if (data.ok) {
+        form.hidden = true;
+        const banner = document.createElement("p");
+        banner.className = "banner banner-success";
+        banner.setAttribute("role", "status");
+        banner.textContent = "Thanks — your note is awaiting approval before it shows up here.";
+        form.insertAdjacentElement("beforebegin", banner);
+        return;
+      }
+
+      if (data.errors) {
+        for (const [field, message] of Object.entries(data.errors)) {
+          const el = form.querySelector<HTMLElement>(`[data-error-for="${field}"]`);
+          if (el) {
+            el.textContent = message;
+            el.hidden = false;
+          }
+        }
+      }
+      if (formError) {
+        formError.textContent = data.formError ?? "Couldn't save that — check the fields above and try again.";
+        formError.hidden = false;
+      }
+    } catch {
+      if (formError) {
+        formError.textContent = "Couldn't reach the server — check your connection and try again.";
+        formError.hidden = false;
+      }
+    } finally {
+      if (submitButton) submitButton.disabled = false;
+    }
+  });
+</script>
