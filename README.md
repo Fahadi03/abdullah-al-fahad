@@ -79,12 +79,20 @@ lang: "bn" | "en"
 pubDate: 2026-03-05
 tags: ["..."]
 draft: false # optional, defaults to false — keeps a post out of production
+audio: "/audio/my-post.mp3" # optional — adds the narration player, see below
 ---
 ```
 
 A missing required field fails the build (`astro check`) rather than
 shipping silently. Future-dated `pubDate` values are meant to be excluded
 from production listings once `/writings` is built (see `PROMPT.md`).
+
+Set `audio` and the article gets a minimal custom player (play/pause,
+seek, elapsed/total time, 1x/1.25x/1.5x speed — no native browser
+controls) right below the header, above the body. Drop the file in
+`public/audio/` so the path resolves. No article has one right now —
+narrating an article means actually recording it, so there's nothing
+honest to seed here.
 
 ### Start a series
 
@@ -339,6 +347,15 @@ behavior.
   honeypot field had a zod `.max(0)` constraint, so a bot filling it
   got a validation error naming the exact field that tripped it. Fixed
   by validating the honeypot outside the schema. Done.
+- Step 10 — the audio narration player (`AudioPlayer.astro`): custom
+  play/pause, a native `<input type="range">` scrubber (`accent-color`
+  for the fill, so it's still fully keyboard-accessible), elapsed/total
+  time in the page's numerals, and a 1x/1.25x/1.5x speed cycle — no
+  native browser controls anywhere. Renders on a writings article only
+  when its frontmatter sets `audio`; none do right now (see "Add an
+  article" above for why). Verified against a real, locally-synthesized
+  3-second WAV — play, pause, seek, and speed change all confirmed
+  working — then removed before committing. Done.
 
 See `PROMPT.md` for the full build order.
 

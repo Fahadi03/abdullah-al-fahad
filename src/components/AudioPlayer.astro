@@ -1,0 +1,191 @@
+---
+import type { Locale } from "../config/site";
+
+interface Props {
+  src: string;
+  lang?: Locale;
+}
+
+const { src, lang = "en" } = Astro.props;
+---
+
+<div class="audio-player" data-audio-player data-lang={lang}>
+  <audio data-audio-element preload="metadata">
+    <source src={src} />
+  </audio>
+
+  <button type="button" class="audio-toggle" data-audio-toggle aria-label={lang === "bn" ? "চালান" : "Play"}>
+    <svg data-icon-play viewBox="0 0 24 24" fill="currentColor" class="h-5 w-5">
+      <path d="M8 5v14l11-7Z"></path>
+    </svg>
+    <svg data-icon-pause viewBox="0 0 24 24" fill="currentColor" class="h-5 w-5 audio-icon-hidden">
+      <path d="M7 5h4v14H7Zm6 0h4v14h-4Z"></path>
+    </svg>
+  </button>
+
+  <input
+    type="range"
+    class="audio-scrubber"
+    data-audio-scrubber
+    min="0"
+    max="0"
+    step="0.1"
+    value="0"
+    aria-label={lang === "bn" ? "অবস্থান" : "Seek"}
+  />
+
+  <span class="audio-time" data-audio-time aria-hidden="true">0:00 / 0:00</span>
+
+  <button type="button" class="audio-speed" data-audio-speed aria-label={lang === "bn" ? "গতি পরিবর্তন করুন" : "Playback speed"}>
+    1x
+  </button>
+</div>
+
+<style>
+  .audio-player {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    margin-bottom: 2.5rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background-color: var(--color-bg-raised);
+  }
+
+  .audio-toggle {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 2.75rem;
+    width: 2.75rem;
+    border-radius: 999px;
+    background-color: var(--color-accent);
+    color: var(--color-accent-ink);
+  }
+
+  /* Class-based, not the `hidden` attribute — Astro's SVGAttributes type
+     doesn't include `hidden`, and SVGElement's TS type omits the property. */
+  .audio-icon-hidden {
+    display: none;
+  }
+
+  .audio-scrubber {
+    flex: 1 1 auto;
+    min-width: 0;
+    accent-color: var(--color-accent);
+    height: 1.25rem;
+  }
+
+  .audio-time {
+    flex-shrink: 0;
+    font-family: var(--font-sans);
+    font-size: var(--text-xs);
+    font-variant-numeric: tabular-nums;
+    color: var(--color-text-muted);
+  }
+
+  .audio-speed {
+    flex-shrink: 0;
+    height: 2.25rem;
+    min-width: 2.75rem;
+    padding-inline: 0.5rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    font-family: var(--font-sans);
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
+  }
+
+  .audio-speed:hover {
+    border-color: var(--color-accent);
+    color: var(--color-text);
+  }
+</style>
+
+<script>
+  import { formatNumber } from "../lib/numerals";
+
+  const SPEEDS = [1, 1.25, 1.5];
+
+  document.querySelectorAll<HTMLElement>("[data-audio-player]").forEach((player) => {
+    const audio = player.querySelector<HTMLAudioElement>("[data-audio-element]");
+    const toggle = player.querySelector<HTMLButtonElement>("[data-audio-toggle]");
+    const playIcon = player.querySelector<SVGElement>("[data-icon-play]");
+    const pauseIcon = player.querySelector<SVGElement>("[data-icon-pause]");
+    const scrubber = player.querySelector<HTMLInputElement>("[data-audio-scrubber]");
+    const timeEl = player.querySelector<HTMLElement>("[data-audio-time]");
+    const speedButton = player.querySelector<HTMLButtonElement>("[data-audio-speed]");
+    if (!audio || !toggle || !playIcon || !pauseIcon || !scrubber || !timeEl || !speedButton) return;
+
+    const lang = player.dataset.lang === "bn" ? "bn" : "en";
+    let speedIndex = 0;
+    let scrubbing = false;
+
+    function setHidden(el: SVGElement, hidden: boolean) {
+      el.classList.toggle("audio-icon-hidden", hidden);
+    }
+
+    function formatTime(seconds: number): string {
+      if (!Number.isFinite(seconds)) return formatNumber("0:00", lang);
+      const minutes = Math.floor(seconds / 60);
+      const secs = Math.floor(seconds % 60)
+        .toString()
+        .padStart(2, "0");
+      return formatNumber(`${minutes}:${secs}`, lang);
+    }
+
+    function updateTime() {
+      if (!audio || !timeEl) return;
+      timeEl.textContent = `${formatTime(audio.currentTime)} / ${formatTime(audio.duration)}`;
+    }
+
+    toggle.addEventListener("click", () => {
+      if (audio.paused) audio.play();
+      else audio.pause();
+    });
+
+    audio.addEventListener("play", () => {
+      setHidden(playIcon, true);
+      setHidden(pauseIcon, false);
+      toggle.setAttribute("aria-label", lang === "bn" ? "বিরতি দিন" : "Pause");
+    });
+
+    audio.addEventListener("pause", () => {
+      setHidden(playIcon, false);
+      setHidden(pauseIcon, true);
+      toggle.setAttribute("aria-label", lang === "bn" ? "চালান" : "Play");
+    });
+
+    audio.addEventListener("loadedmetadata", () => {
+      scrubber.max = String(audio.duration);
+      updateTime();
+    });
+
+    audio.addEventListener("timeupdate", () => {
+      if (!scrubbing) scrubber.value = String(audio.currentTime);
+      updateTime();
+    });
+
+    audio.addEventListener("ended", () => {
+      setHidden(playIcon, false);
+      setHidden(pauseIcon, true);
+    });
+
+    scrubber.addEventListener("input", () => {
+      scrubbing = true;
+      audio.currentTime = Number(scrubber.value);
+      updateTime();
+    });
+    scrubber.addEventListener("change", () => {
+      scrubbing = false;
+    });
+
+    speedButton.addEventListener("click", () => {
+      speedIndex = (speedIndex + 1) % SPEEDS.length;
+      audio.playbackRate = SPEEDS[speedIndex];
+      speedButton.textContent = `${SPEEDS[speedIndex]}x`;
+    });
+  });
+</script>
