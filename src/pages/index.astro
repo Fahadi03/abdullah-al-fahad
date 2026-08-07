@@ -4,6 +4,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import Header from "../components/Header.astro";
 import ArticleCard from "../components/ArticleCard.astro";
 import VideoCard from "../components/VideoCard.astro";
+import NewsletterForm from "../components/NewsletterForm.astro";
 import { getPublishedWritings, getAllSeries, resolveSeries } from "../lib/writings";
 import { getPublishedVideos } from "../lib/videos";
 import { estimateReadingMinutes } from "../lib/reading-time";
@@ -129,6 +130,10 @@ const recent = [...recentWritings, ...recentVideos].sort((a, b) => b.date.valueO
         </section>
       )
     }
+
+    <section class="border-t border-border py-16">
+      <NewsletterForm />
+    </section>
   </main>
 </BaseLayout>
 

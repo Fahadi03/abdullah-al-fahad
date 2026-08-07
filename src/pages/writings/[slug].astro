@@ -7,6 +7,7 @@ import ShareRow from "../../components/ShareRow.astro";
 import ViewCount from "../../components/ViewCount.astro";
 import ReactionButton from "../../components/ReactionButton.astro";
 import CommentSection from "../../components/CommentSection.astro";
+import NewsletterForm from "../../components/NewsletterForm.astro";
 import LanguageChip from "../../components/LanguageChip.astro";
 import Callout from "../../components/Callout.astro";
 import Footnote from "../../components/Footnote.astro";
@@ -83,6 +84,10 @@ const canonicalUrl = new URL(`/writings/${entry.id}`, SITE.url).toString();
 
     <div class="prose" data-article-body lang={entry.data.lang}>
       <Content components={{ Callout, Footnote }} />
+    </div>
+
+    <div class="mt-16" data-pagefind-ignore>
+      <NewsletterForm lang={entry.data.lang} />
     </div>
 
     {seriesEpisodes.length > 1 && <SeriesNav episodes={seriesEpisodes} current={entry} />}

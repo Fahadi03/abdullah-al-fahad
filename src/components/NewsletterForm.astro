@@ -1,0 +1,135 @@
+---
+import type { Locale } from "../config/site";
+
+interface Props {
+  variant?: "assembly";
+  lang?: Locale;
+}
+
+const { variant, lang = "en" } = Astro.props;
+const username = import.meta.env.PUBLIC_BUTTONDOWN_USERNAME;
+
+const copy =
+  variant === "assembly"
+    ? {
+        heading: "তত্ত্ব সভার নতুন লেখা পান",
+        promise:
+          "অ্যাসেম্বলি অফ আইডিয়াজে নতুন কিছু প্রকাশিত হলে জানতে পারবেন — সাধারণ নিউজলেটার থেকে আলাদা। একটা নিশ্চিতকরণ ইমেইল আসবে প্রথমে।",
+        placeholder: "you@example.com",
+        button: "সাবস্ক্রাইব",
+        unsubscribe: "যেকোনো সময় এক ক্লিকে আনসাবস্ক্রাইব করা যাবে।",
+        empty: "নিউজলেটার এখনো চালু হয়নি।",
+        lang: "bn" as const,
+      }
+    : lang === "bn"
+      ? {
+          heading: "নতুন লেখা ইমেইলে পান",
+          promise: "নতুন কিছু প্রকাশিত হলে মাঝেমধ্যে ইমেইল — মাসে দুইবারের বেশি না। প্রথমে একটা নিশ্চিতকরণ ইমেইল আসবে।",
+          placeholder: "you@example.com",
+          button: "সাবস্ক্রাইব",
+          unsubscribe: "যেকোনো সময় এক ক্লিকে আনসাবস্ক্রাইব করা যাবে।",
+          empty: "নিউজলেটার এখনো চালু হয়নি।",
+          lang: "bn" as const,
+        }
+      : {
+          heading: "Get new writing in your inbox",
+          promise: "Occasional emails when something new is published — no more than a couple times a month. You'll get one email to confirm first.",
+          placeholder: "you@example.com",
+          button: "Subscribe",
+          unsubscribe: "Unsubscribe anytime, one click.",
+          empty: "Newsletter signup isn't set up yet.",
+          lang: "en" as const,
+        };
+---
+
+<div class="newsletter" lang={copy.lang}>
+  {
+    username ? (
+      <>
+        <h2 class="newsletter-heading">{copy.heading}</h2>
+        <p class="newsletter-promise">{copy.promise}</p>
+        <form
+          action={`https://buttondown.com/api/emails/embed-subscribe/${username}`}
+          method="post"
+          target="popupwindow"
+          class="newsletter-form"
+          onsubmit={`window.open('https://buttondown.com/${username}', 'popupwindow')`}
+        >
+          <input type="email" name="email" placeholder={copy.placeholder} required class="newsletter-input" />
+          <button type="submit" class="newsletter-button">
+            {copy.button}
+          </button>
+        </form>
+        <p class="newsletter-unsubscribe">{copy.unsubscribe}</p>
+      </>
+    ) : (
+      <p class="newsletter-empty">{copy.empty}</p>
+    )
+  }
+</div>
+
+<style>
+  .newsletter {
+    border-top: 1px solid var(--color-border);
+    padding-top: 2rem;
+  }
+
+  .newsletter-heading {
+    font-family: var(--font-serif);
+    font-size: var(--text-xl);
+  }
+
+  .newsletter-promise {
+    margin-top: 0.5rem;
+    max-width: 45ch;
+    color: var(--color-text-muted);
+  }
+
+  .newsletter-form {
+    margin-top: 1.25rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .newsletter-input {
+    flex: 1 1 16rem;
+    min-height: 44px;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+  }
+
+  .newsletter-input:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  .newsletter-button {
+    min-height: 44px;
+    padding-inline: 1.5rem;
+    border-radius: var(--radius-md);
+    background-color: var(--color-accent);
+    color: var(--color-accent-ink);
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    font-weight: 500;
+  }
+
+  .newsletter-unsubscribe {
+    margin-top: 0.75rem;
+    font-family: var(--font-sans);
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
+  }
+
+  .newsletter-empty {
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+  }
+</style>
