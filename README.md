@@ -207,9 +207,11 @@ folder copy, per the spec:
 - Every internal link is built from `SITE.assemblyBase` (`src/config/site.ts`),
   never a hardcoded `/assembly` string — so moving to a subdomain is
   changing that one constant plus adding 301s for the old paths.
-- Not yet done (later steps): Assembly's own RSS feed (step 11), and
-  Cusdis/Redis keys scoped as `assembly:<slug>` rather than derived from
-  the URL, once comments/reactions/view counts are built (step 9).
+- Comments, reactions and view counts (step 9) use `assembly:<slug>`
+  keys (Cusdis `pageId`, Redis `views:assembly:<slug>` /
+  `reactions:assembly:<slug>`) rather than anything derived from the
+  URL, exactly per the rule above — see "Dynamic layer" below.
+- Not yet done: Assembly's own RSS feed (step 11).
 
 **No fabricated content.** The gallery and most of the timeline ship
 empty rather than seeded with invented event photos or made-up
@@ -227,14 +229,64 @@ needs to change — re-run with `python scripts/fetch-fonts.py`).
 
 ## Environment variables
 
-Copy `.env.example` to `.env`. Currently:
+Copy `.env.example` to `.env` and fill in what you have. Every one of
+these is optional in the sense that the site still builds and runs
+without it — the feature it powers just shows an honest unconfigured
+state (or, for a form, a real error) instead. None of them are set in
+this repo yet; see "Dynamic layer" below for exactly what that looks
+like today.
 
 | Var | Purpose |
 |---|---|
 | `SITE_URL` | Canonical origin, no trailing slash. Every canonical tag, OG URL, RSS/sitemap entry is built from this — see `src/config/site.ts`. |
+| `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` | [console.upstash.com](https://console.upstash.com) → create a Redis database → REST API section. Backs view counts, reactions, the guestbook, and rate limiting. |
+| `RESEND_API_KEY`, `CONTACT_EMAIL`, `CONTACT_FROM_EMAIL` | [resend.com](https://resend.com) → API Keys. `CONTACT_FROM_EMAIL` must be on a domain verified with Resend (their sandbox domain works for testing). Powers the contact form. |
+| `PUBLIC_CUSDIS_APP_ID`, `PUBLIC_CUSDIS_HOST` | [cusdis.com](https://cusdis.com) → create a project → App ID. `PUBLIC_` because it's embedded client-side — not a secret. Leave the host unset to use `https://cusdis.com`, or point it at a self-hosted instance. |
+| `PUBLIC_BUTTONDOWN_USERNAME` | [buttondown.com](https://buttondown.com) → your username is the last part of your `buttondown.com/<username>` URL. Also not a secret — the embed form posts directly to Buttondown from the browser. |
+| `GUESTBOOK_ADMIN_TOKEN` | Any long random string — generate one with `openssl rand -hex 32`. `/admin/guestbook?token=<this>` is the only way to approve or reject pending entries. |
 
-More variables (Resend, Upstash, Cusdis, Buttondown) get documented here
-as those integrations are built.
+## Dynamic layer
+
+Six features, all built the same way: fail open/silent (view counter,
+reactions) or show a real error, never a fake success (contact form,
+guestbook) when the service behind them isn't configured — exactly
+what happens right now, since none of the accounts above are set up in
+this repo. Nothing here is stubbed or mocked; it's the real
+integration, verified against its actual unconfigured-service
+behavior.
+
+- **View counter** — `ViewCount.astro` is a real Astro server island
+  (`server:defer`) on writings and Assembly pieces, so the article
+  itself stays static and never waits on Redis. `INCR`s `views:<slug>`
+  (or `views:assembly:<slug>`), deduped per visitor with a 30-minute
+  cookie. Listing cards batch-fetch counts from `GET /api/views`
+  (read-only, never increments) after the page has already rendered.
+- **Reactions** — one 👏 per writing/Assembly piece, optimistic UI
+  backed by `POST /api/reactions`, deduped server-side with a
+  24-hour cookie and mirrored in `localStorage` so the pressed state
+  survives a reload without a round trip.
+- **Contact form** (`/contact`) — `POST /api/contact` validates with
+  zod server-side, honeypot + minimum-time-to-submit bot checks,
+  5/hour per-IP rate limit, sends through Resend. Branches on
+  `Content-Type` to support a real no-JS submission (303 redirect to
+  `/contact?sent=0|1`, rendered by the page since it's `prerender =
+  false`) alongside the JS `fetch()` path (inline field errors, a
+  disabled-while-sending button, no `alert()`).
+- **Comments** — `CommentSection.astro` on writings and Assembly
+  pieces, Cusdis's script loaded lazily on scroll-into-view
+  (IntersectionObserver — the vanilla-component equivalent of
+  `client:visible`). Keyed by a stable `pageId` (`assembly:<slug>` for
+  pieces), not the URL. Restyling is honestly partial — see the code
+  comment in `CommentSection.astro` for why full CSS injection into
+  Cusdis's iframe isn't implemented.
+- **Newsletter** — `NewsletterForm.astro` wraps Buttondown's embed (own
+  styling, never their default markup) in three placements: home
+  (below the fold), the end of every writings article, and Assembly's
+  own "Follow" section with copy framed for that audience specifically.
+- **Guestbook** (`/guestbook`) — same anti-spam stack as the contact
+  form. Entries land in a Redis pending list, invisible until approved
+  at `/admin/guestbook?token=...`, then move to the approved list shown
+  newest-first on the public page.
 
 ## Status
 
@@ -278,6 +330,15 @@ as those integrations are built.
   current focus), `/404`. The nav grew to 7 links, which made the
   header genuinely need a mobile menu rather than just wrapping — added
   a hamburger disclosure at `sm:` and below, 44px tap targets. Done.
+- Step 9 — the dynamic layer: view counter, reactions, contact form
+  (`/contact`), comments, newsletter, guestbook (`/guestbook` +
+  `/admin/guestbook`). See "Dynamic layer" above for what each one does
+  and exactly how it behaves with no service credentials configured —
+  which is the actual state of this repo today, not a hypothetical.
+  Caught and fixed a real bug along the way: the contact form's
+  honeypot field had a zod `.max(0)` constraint, so a bot filling it
+  got a validation error naming the exact field that tripped it. Fixed
+  by validating the honeypot outside the schema. Done.
 
 See `PROMPT.md` for the full build order.
 
