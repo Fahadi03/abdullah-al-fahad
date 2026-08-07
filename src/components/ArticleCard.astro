@@ -36,5 +36,36 @@ const { title, description, lang, pubDate } = entry.data;
     <time datetime={pubDate.toISOString()}>{formatDate(pubDate, lang)}</time>
     <span aria-hidden="true">·</span>
     <span>{formatMinutes(readingMinutes, lang)}</span>
+    <span data-view-count-slug={entry.id} data-view-count-lang={lang} hidden>
+      <span aria-hidden="true">·</span> <span data-view-count-text />
+    </span>
   </div>
 </a>
+
+<script>
+  import { formatCount } from "../lib/numerals";
+
+  const nodes = Array.from(document.querySelectorAll<HTMLElement>("[data-view-count-slug]"));
+  const slugs = [...new Set(nodes.map((node) => node.dataset.viewCountSlug).filter((s): s is string => !!s))];
+
+  if (slugs.length > 0) {
+    fetch(`/api/views?slugs=${encodeURIComponent(slugs.join(","))}`)
+      .then((res) => res.json())
+      .then((counts: Record<string, number>) => {
+        for (const node of nodes) {
+          const slug = node.dataset.viewCountSlug;
+          const count = slug ? counts[slug] : undefined;
+          if (!count) continue;
+          const lang = node.dataset.viewCountLang === "bn" ? "bn" : "en";
+          const textEl = node.querySelector("[data-view-count-text]");
+          if (textEl) {
+            textEl.textContent = lang === "bn" ? `${formatCount(count, "bn")} বার দেখা` : `${formatCount(count, "en")} views`;
+            node.hidden = false;
+          }
+        }
+      })
+      .catch(() => {
+        // Listing-card view counts are decorative — silently leave them hidden.
+      });
+  }
+</script>

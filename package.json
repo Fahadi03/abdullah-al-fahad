@@ -15,10 +15,13 @@
     "@astrojs/mdx": "^4.3.14",
     "@astrojs/vercel": "^9.0.5",
     "@tailwindcss/vite": "^4.3.3",
+    "@upstash/redis": "^1.38.2",
     "astro": "^5.18.2",
     "hastscript": "^9.0.1",
+    "resend": "^6.18.1",
     "tailwindcss": "^4.3.3",
-    "unist-util-visit": "^5.1.0"
+    "unist-util-visit": "^5.1.0",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.4",

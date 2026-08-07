@@ -4,6 +4,8 @@ import ProseLayout from "../../layouts/ProseLayout.astro";
 import ArticleCard from "../../components/ArticleCard.astro";
 import SeriesNav from "../../components/SeriesNav.astro";
 import ShareRow from "../../components/ShareRow.astro";
+import ViewCount from "../../components/ViewCount.astro";
+import ReactionButton from "../../components/ReactionButton.astro";
 import LanguageChip from "../../components/LanguageChip.astro";
 import Callout from "../../components/Callout.astro";
 import Footnote from "../../components/Footnote.astro";
@@ -68,8 +70,12 @@ const canonicalUrl = new URL(`/writings/${entry.id}`, SITE.url).toString();
         <time datetime={entry.data.pubDate.toISOString()}>{formatDate(entry.data.pubDate, entry.data.lang)}</time>
         <span aria-hidden="true">·</span>
         <span>{formatMinutes(readingMinutes, entry.data.lang)}</span>
+        <ViewCount viewKey={`views:${entry.id}`} lang={entry.data.lang} server:defer>
+          <Fragment slot="fallback" />
+        </ViewCount>
       </div>
-      <div class="mt-6">
+      <div class="mt-6 flex flex-wrap items-center gap-4">
+        <ReactionButton slug={entry.id} lang={entry.data.lang} />
         <ShareRow url={canonicalUrl} title={entry.data.title} />
       </div>
     </header>

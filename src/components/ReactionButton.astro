@@ -1,0 +1,132 @@
+---
+import type { Locale } from "../config/site";
+
+interface Props {
+  slug: string;
+  namespace?: "assembly";
+  lang?: Locale;
+}
+
+const { slug, namespace, lang = "en" } = Astro.props;
+---
+
+<button
+  type="button"
+  class="reaction-button"
+  data-reaction-button
+  data-slug={slug}
+  data-namespace={namespace ?? ""}
+  aria-label={lang === "bn" ? "হাততালি দিন" : "Applaud this"}
+  aria-pressed="false"
+>
+  <span class="reaction-emoji" aria-hidden="true">👏</span>
+  <span class="reaction-count" data-reaction-count hidden></span>
+</button>
+
+<style>
+  .reaction-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    height: 2.75rem;
+    padding-inline: 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+    transition:
+      color var(--duration-fast) var(--ease-editorial),
+      border-color var(--duration-fast) var(--ease-editorial),
+      background-color var(--duration-fast) var(--ease-editorial);
+  }
+
+  .reaction-button:hover {
+    border-color: var(--color-accent);
+    color: var(--color-text);
+  }
+
+  .reaction-button[aria-pressed="true"] {
+    border-color: var(--color-accent);
+    background-color: var(--color-bg-raised);
+    color: var(--color-accent);
+  }
+
+  .reaction-emoji {
+    font-size: var(--text-lg);
+    line-height: 1;
+  }
+</style>
+
+<script>
+  const KEY_PREFIX = "reacted";
+
+  function todayKey(key: string): string {
+    return `${KEY_PREFIX}:${key}:${new Date().toISOString().slice(0, 10)}`;
+  }
+
+  function reactionKey(slug: string, namespace: string): string {
+    return namespace ? `reactions:${namespace}:${slug}` : `reactions:${slug}`;
+  }
+
+  document.querySelectorAll<HTMLButtonElement>("[data-reaction-button]").forEach((button) => {
+    const slug = button.dataset.slug ?? "";
+    const namespace = button.dataset.namespace ?? "";
+    const key = reactionKey(slug, namespace);
+    const countEl = button.querySelector<HTMLElement>("[data-reaction-count]");
+    let alreadyReacted = false;
+
+    try {
+      alreadyReacted = localStorage.getItem(todayKey(key)) === "1";
+    } catch {
+      // localStorage unavailable — button still works, just without the
+      // "already reacted" pre-fill; the server-side cookie still dedupes.
+    }
+    if (alreadyReacted) button.setAttribute("aria-pressed", "true");
+
+    fetch(`/api/reactions?slug=${encodeURIComponent(slug)}${namespace ? `&namespace=${namespace}` : ""}`)
+      .then((res) => res.json())
+      .then((data: { count: number | null }) => {
+        if (data.count === null || !countEl) return;
+        countEl.textContent = String(data.count);
+        countEl.hidden = false;
+      })
+      .catch(() => {
+        // No count shown — the button still works, it just won't display a number.
+      });
+
+    button.addEventListener("click", async () => {
+      if (button.getAttribute("aria-pressed") === "true") return;
+
+      button.setAttribute("aria-pressed", "true");
+      button.disabled = true;
+      if (countEl && !countEl.hidden) {
+        const current = Number(countEl.textContent) || 0;
+        countEl.textContent = String(current + 1);
+      }
+
+      try {
+        const res = await fetch("/api/reactions", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ slug, namespace: namespace || undefined }),
+        });
+        const data: { count?: number } = await res.json();
+        if (typeof data.count === "number" && countEl) {
+          countEl.textContent = String(data.count);
+          countEl.hidden = false;
+        }
+        try {
+          localStorage.setItem(todayKey(key), "1");
+        } catch {
+          // Nothing to fall back to — the server cookie is still the source of truth.
+        }
+      } catch {
+        // Leave the optimistic state as-is — a failed request here isn't worth
+        // rolling back a 👏 tap over.
+      } finally {
+        button.disabled = false;
+      }
+    });
+  });
+</script>

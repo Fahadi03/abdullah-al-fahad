@@ -1,0 +1,58 @@
+---
+import { getRedis } from "../lib/redis";
+import { formatCount } from "../lib/numerals";
+import type { Locale } from "../config/site";
+
+// Server island: this component runs per-request even though the page
+// around it is static, so the article itself never waits on Redis.
+interface Props {
+  /** Full Redis key, e.g. `views:my-slug` or `views:assembly:my-slug`. */
+  viewKey: string;
+  lang?: Locale;
+}
+
+const { viewKey, lang = "en" } = Astro.props;
+
+let count: number | null = null;
+
+const redis = getRedis();
+if (redis) {
+  try {
+    const cookieName = `viewed_${viewKey.replace(/[^a-zA-Z0-9_]/g, "_")}`;
+    const alreadyViewed = Astro.cookies.has(cookieName);
+
+    count = alreadyViewed ? ((await redis.get<number>(viewKey)) ?? 0) : await redis.incr(viewKey);
+
+    if (!alreadyViewed) {
+      Astro.cookies.set(cookieName, "1", {
+        maxAge: 60 * 30,
+        path: "/",
+        httpOnly: true,
+        sameSite: "lax",
+      });
+    }
+  } catch (error) {
+    console.error("view count failed, rendering nothing", error);
+    count = null;
+  }
+}
+---
+
+{
+  count !== null && (
+    <>
+      <span aria-hidden="true">·</span>
+      <span class="view-count">
+        {lang === "bn" ? `${formatCount(count, "bn")} বার দেখা হয়েছে` : `${formatCount(count, "en")} views`}
+      </span>
+    </>
+  )
+}
+
+<style>
+  .view-count {
+    font-family: var(--font-sans);
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
+  }
+</style>
