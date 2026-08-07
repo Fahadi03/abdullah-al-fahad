@@ -1,0 +1,236 @@
+---
+export const prerender = false;
+
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Header from "../components/Header.astro";
+
+const sent = Astro.url.searchParams.get("sent");
+---
+
+<BaseLayout title="Contact" description="Get in touch.">
+  <Header />
+
+  <main class="mx-auto max-w-2xl px-6 py-12 sm:px-10 sm:py-16">
+    <h1 class="font-serif text-4xl leading-tight text-balance">Contact</h1>
+    <p class="mt-3 max-w-prose font-serif text-lg text-text-muted">
+      For anything that doesn't fit a comment — questions, corrections, work inquiries.
+    </p>
+
+    {
+      sent === "1" && (
+        <p class="banner banner-success" role="status">
+          Sent — thanks. I'll get back to you when I can.
+        </p>
+      )
+    }
+    {
+      sent === "0" && (
+        <p class="banner banner-error" role="alert">
+          Something went wrong sending that. Try again, or check the fields below.
+        </p>
+      )
+    }
+
+    <form method="POST" action="/api/contact" class="contact-form" data-contact-form novalidate>
+      <div class="field">
+        <label for="name">Name</label>
+        <input type="text" id="name" name="name" autocomplete="name" required />
+        <p class="field-error" data-error-for="name" hidden></p>
+      </div>
+
+      <div class="field">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" autocomplete="email" required />
+        <p class="field-error" data-error-for="email" hidden></p>
+      </div>
+
+      <div class="field">
+        <label for="message">Message</label>
+        <textarea id="message" name="message" rows="6" required></textarea>
+        <p class="field-error" data-error-for="message" hidden></p>
+      </div>
+
+      <!-- Honeypot — hidden from real visitors via CSS, not `type="hidden"`,
+           since some bots skip inputs with type=hidden. Real users never
+           tab to it (tabindex -1) or hear it (aria-hidden). -->
+      <div class="honeypot" aria-hidden="true">
+        <label for="company">Company</label>
+        <input type="text" id="company" name="company" tabindex="-1" autocomplete="off" />
+      </div>
+      <input type="hidden" name="startedAt" data-started-at value="" />
+
+      <p class="form-error" data-form-error hidden></p>
+
+      <button type="submit" class="submit-button" data-submit-button>Send</button>
+    </form>
+  </main>
+</BaseLayout>
+
+<style>
+  .banner {
+    margin-top: 2rem;
+    padding: 1rem 1.25rem;
+    border-radius: var(--radius-md);
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+  }
+
+  .banner-success {
+    background-color: var(--color-bg-raised);
+    border: 1px solid var(--color-accent);
+    color: var(--color-text);
+  }
+
+  .banner-error {
+    background-color: var(--color-bg-raised);
+    border: 1px solid #b3541e;
+    color: var(--color-text);
+  }
+
+  .contact-form {
+    margin-top: 2.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .field label {
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+  }
+
+  .field input,
+  .field textarea {
+    width: 100%;
+    min-height: 44px;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+  }
+
+  .field textarea {
+    resize: vertical;
+  }
+
+  .field input:focus-visible,
+  .field textarea:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  .field-error {
+    font-family: var(--font-sans);
+    font-size: var(--text-xs);
+    color: #b3541e;
+  }
+
+  .honeypot {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+
+  .form-error {
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    color: #b3541e;
+  }
+
+  .submit-button {
+    align-self: flex-start;
+    height: 2.75rem;
+    padding-inline: 1.5rem;
+    border-radius: var(--radius-md);
+    background-color: var(--color-accent);
+    color: var(--color-accent-ink);
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    font-weight: 500;
+    transition: opacity var(--duration-fast) var(--ease-editorial);
+  }
+
+  .submit-button:disabled {
+    opacity: 0.6;
+  }
+</style>
+
+<script>
+  const startedAtInput = document.querySelector<HTMLInputElement>("[data-started-at]");
+  if (startedAtInput) startedAtInput.value = String(Date.now());
+
+  const form = document.querySelector<HTMLFormElement>("[data-contact-form]");
+  const submitButton = document.querySelector<HTMLButtonElement>("[data-submit-button]");
+  const formError = document.querySelector<HTMLElement>("[data-form-error]");
+
+  function clearErrors() {
+    form?.querySelectorAll<HTMLElement>("[data-error-for]").forEach((el) => {
+      el.hidden = true;
+      el.textContent = "";
+    });
+    if (formError) {
+      formError.hidden = true;
+      formError.textContent = "";
+    }
+  }
+
+  form?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    clearErrors();
+    if (submitButton) submitButton.disabled = true;
+
+    try {
+      const formData = new FormData(form);
+      const body = Object.fromEntries(formData.entries());
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const data: { ok: boolean; errors?: Record<string, string>; formError?: string } = await res.json();
+
+      if (data.ok) {
+        form.hidden = true;
+        const banner = document.createElement("p");
+        banner.className = "banner banner-success";
+        banner.setAttribute("role", "status");
+        banner.textContent = "Sent — thanks. I'll get back to you when I can.";
+        form.insertAdjacentElement("beforebegin", banner);
+        return;
+      }
+
+      if (data.errors) {
+        for (const [field, message] of Object.entries(data.errors)) {
+          const el = form.querySelector<HTMLElement>(`[data-error-for="${field}"]`);
+          if (el) {
+            el.textContent = message;
+            el.hidden = false;
+          }
+        }
+      }
+      if (formError) {
+        formError.textContent = data.formError ?? "Couldn't send that — check the fields above and try again.";
+        formError.hidden = false;
+      }
+    } catch {
+      if (formError) {
+        formError.textContent = "Couldn't reach the server — check your connection and try again.";
+        formError.hidden = false;
+      }
+    } finally {
+      if (submitButton) submitButton.disabled = false;
+    }
+  });
+</script>
