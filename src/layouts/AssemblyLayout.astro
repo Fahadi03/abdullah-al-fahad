@@ -1,7 +1,7 @@
 ---
 import BaseLayout from "./BaseLayout.astro";
 import Header from "../components/Header.astro";
-import type { Locale } from "../config/site";
+import { SITE, type Locale } from "../config/site";
 
 interface Props {
   title: string;
@@ -16,6 +16,7 @@ const { title, description, lang = "bn", image, type = "website" } = Astro.props
 
 <BaseLayout title={title} description={description} lang={lang} image={image} type={type}>
   <Fragment slot="head">
+    <link rel="alternate" type="application/rss+xml" title="Assembly of Ideas — তত্ত্ব সভা" href={`${SITE.assemblyBase}/rss.xml`} />
     <slot name="head" />
   </Fragment>
   <Header />

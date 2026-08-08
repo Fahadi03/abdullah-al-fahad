@@ -57,8 +57,14 @@ const ogLocale = lang === "bn" ? "bn_BD" : "en_US";
 
     <!-- Favicon / PWA -->
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon-32x32.png" type="image/png" sizes="32x32" />
+    <link rel="icon" href="/favicon-16x16.png" type="image/png" sizes="16x16" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
+    <meta name="theme-color" content="#faf7f2" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#15130f" media="(prefers-color-scheme: dark)" />
+
+    <link rel="alternate" type="application/rss+xml" title={`${SITE.name} — Writings`} href="/rss.xml" />
 
     <link
       rel="preload"
