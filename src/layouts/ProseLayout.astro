@@ -11,12 +11,16 @@ interface Props {
   description: string;
   lang: Locale;
   headings: MarkdownHeading[];
+  image?: string;
 }
 
-const { title, description, lang, headings } = Astro.props;
+const { title, description, lang, headings, image } = Astro.props;
 ---
 
-<BaseLayout title={title} description={description} lang={lang}>
+<BaseLayout title={title} description={description} lang={lang} image={image} type="article">
+  <Fragment slot="head">
+    <slot name="head" />
+  </Fragment>
   <ReadingProgressBar />
   <Header />
   <main class="mx-auto max-w-5xl px-6 py-12 sm:px-10 sm:py-16">

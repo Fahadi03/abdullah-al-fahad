@@ -1,15 +1,21 @@
 ---
 import "../styles/global.css";
-import { SITE } from "../config/site";
+import Analytics from "@vercel/analytics/astro";
+import { SITE, type Locale } from "../config/site";
 
 interface Props {
   title: string;
   description: string;
-  lang?: "en" | "bn";
+  lang?: Locale;
+  /** Absolute URL. Defaults to the site-wide OG image when a page has none of its own. */
+  image?: string;
+  type?: "website" | "article";
 }
 
-const { title, description, lang = "en" } = Astro.props;
+const { title, description, lang = "en", image, type = "website" } = Astro.props;
 const canonicalUrl = new URL(Astro.url.pathname, SITE.url).toString();
+const ogImageUrl = image ?? new URL("/og/default.png", SITE.url).toString();
+const ogLocale = lang === "bn" ? "bn_BD" : "en_US";
 ---
 
 <!doctype html>
@@ -32,6 +38,28 @@ const canonicalUrl = new URL(Astro.url.pathname, SITE.url).toString();
     <meta name="description" content={description} />
     <link rel="canonical" href={canonicalUrl} />
 
+    <!-- Open Graph -->
+    <meta property="og:type" content={type} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:site_name" content={SITE.name} />
+    <meta property="og:locale" content={ogLocale} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={ogImageUrl} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImageUrl} />
+
+    <!-- Favicon / PWA -->
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+
     <link
       rel="preload"
       href="/fonts/inter-400-normal.woff2"
@@ -48,8 +76,10 @@ const canonicalUrl = new URL(Astro.url.pathname, SITE.url).toString();
     />
 
     <meta name="generator" content={Astro.generator} />
+    <slot name="head" />
   </head>
   <body class="min-h-screen antialiased">
     <slot />
+    <Analytics />
   </body>
 </html>

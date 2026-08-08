@@ -24,9 +24,33 @@ interface Props {
 const { entry } = Astro.props;
 const { Content } = await render(entry);
 const canonicalUrl = new URL(`${SITE.assemblyBase}/${entry.id}`, SITE.url).toString();
+const ogImageUrl = new URL(`/og/assembly/${entry.id}.png`, SITE.url).toString();
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  headline: entry.data.title,
+  description: entry.data.description,
+  datePublished: entry.data.pubDate.toISOString(),
+  inLanguage: entry.data.lang,
+  url: canonicalUrl,
+  image: ogImageUrl,
+  author: { "@type": "Person", name: SITE.author, url: new URL("/about", SITE.url).toString() },
+  publisher: { "@type": "Person", name: SITE.author },
+  mainEntityOfPage: { "@type": "WebPage", "@id": canonicalUrl },
+};
 ---
 
-<AssemblyLayout title={entry.data.title} description={entry.data.description} lang={entry.data.lang}>
+<AssemblyLayout
+  title={entry.data.title}
+  description={entry.data.description}
+  lang={entry.data.lang}
+  image={ogImageUrl}
+  type="article"
+>
+  <Fragment slot="head">
+    <script is:inline type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+  </Fragment>
   <main class="mx-auto max-w-3xl px-6 py-12 sm:px-10 sm:py-16">
     <a href={SITE.assemblyBase} class="back-link">← Assembly of Ideas</a>
 

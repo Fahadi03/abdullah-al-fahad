@@ -2,9 +2,23 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Header from "../components/Header.astro";
 import { SITE } from "../config/site";
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Person",
+  name: SITE.author,
+  url: new URL("/about", SITE.url).toString(),
+  jobTitle: "Junior Full-Stack Developer",
+  worksFor: { "@type": "Organization", name: "FabTech.IT" },
+  alumniOf: { "@type": "CollegeOrUniversity", name: "Northern University Bangladesh" },
+  sameAs: [SITE.social.github, SITE.social.linkedin],
+};
 ---
 
 <BaseLayout title="About" description="Final-year CSE student, junior full-stack developer, and the person behind Assembly of Ideas.">
+  <Fragment slot="head">
+    <script is:inline type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+  </Fragment>
   <Header />
 
   <main class="mx-auto max-w-3xl px-6 py-12 sm:px-10 sm:py-16">

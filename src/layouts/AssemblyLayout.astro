@@ -7,12 +7,17 @@ interface Props {
   title: string;
   description: string;
   lang?: Locale;
+  image?: string;
+  type?: "website" | "article";
 }
 
-const { title, description, lang = "bn" } = Astro.props;
+const { title, description, lang = "bn", image, type = "website" } = Astro.props;
 ---
 
-<BaseLayout title={title} description={description} lang={lang}>
+<BaseLayout title={title} description={description} lang={lang} image={image} type={type}>
+  <Fragment slot="head">
+    <slot name="head" />
+  </Fragment>
   <Header />
   <div class="assembly-scope">
     <slot />

@@ -45,9 +45,34 @@ const relatedWithMinutes = related.map((item) => ({
 
 const readingMinutes = estimateReadingMinutes(entry.body ?? "", entry.data.lang);
 const canonicalUrl = new URL(`/writings/${entry.id}`, SITE.url).toString();
+const ogImageUrl = new URL(`/og/writings/${entry.id}.png`, SITE.url).toString();
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  headline: entry.data.title,
+  description: entry.data.description,
+  datePublished: entry.data.pubDate.toISOString(),
+  ...(entry.data.updatedDate ? { dateModified: entry.data.updatedDate.toISOString() } : {}),
+  inLanguage: entry.data.lang,
+  url: canonicalUrl,
+  image: ogImageUrl,
+  author: { "@type": "Person", name: SITE.author, url: new URL("/about", SITE.url).toString() },
+  publisher: { "@type": "Person", name: SITE.author },
+  mainEntityOfPage: { "@type": "WebPage", "@id": canonicalUrl },
+};
 ---
 
-<ProseLayout title={entry.data.title} description={entry.data.description} lang={entry.data.lang} headings={headings}>
+<ProseLayout
+  title={entry.data.title}
+  description={entry.data.description}
+  lang={entry.data.lang}
+  headings={headings}
+  image={ogImageUrl}
+>
+  <Fragment slot="head">
+    <script is:inline type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+  </Fragment>
   <article data-pagefind-body>
     <header class="mb-10">
       <div class="mb-4 flex flex-wrap items-center gap-3">
