@@ -101,7 +101,7 @@ const allTags = Array.from(new Set(writings.flatMap((entry) => entry.data.tags))
     <div class="writings-grid" data-writings-list>
       {
         cards.map(({ entry, series, readingMinutes }) => (
-          <ArticleCard entry={entry} series={series} readingMinutes={readingMinutes} />
+          <ArticleCard entry={entry} series={series} readingMinutes={readingMinutes} headingLevel="h2" />
         ))
       }
     </div>

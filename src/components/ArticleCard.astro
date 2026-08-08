@@ -7,10 +7,13 @@ interface Props {
   entry: CollectionEntry<"writings">;
   series?: CollectionEntry<"series">;
   readingMinutes: number;
+  /** Match the heading this card actually nests under — no bare h1-to-h3 jumps. */
+  headingLevel?: "h2" | "h3";
 }
 
-const { entry, series, readingMinutes } = Astro.props;
+const { entry, series, readingMinutes, headingLevel = "h3" } = Astro.props;
 const { title, description, lang, pubDate } = entry.data;
+const Heading = headingLevel;
 ---
 
 <a
@@ -25,12 +28,12 @@ const { title, description, lang, pubDate } = entry.data;
     <LanguageChip lang={lang} />
     {series && <span class="font-sans text-xs text-text-muted">{series.data.title}</span>}
   </div>
-  <h3
+  <Heading
     class="font-serif text-2xl leading-snug text-balance transition-colors duration-fast group-hover:text-accent"
     lang={lang}
   >
     {title}
-  </h3>
+  </Heading>
   <p class="mt-2 line-clamp-2 font-serif text-text-muted" lang={lang}>{description}</p>
   <div class="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 font-sans text-xs text-text-muted">
     <time datetime={pubDate.toISOString()}>{formatDate(pubDate, lang)}</time>
