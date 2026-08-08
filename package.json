@@ -9,7 +9,8 @@
     "build": "node scripts/build-og-images.mjs && astro check && astro build && pagefind --site dist --force-language en && node scripts/copy-pagefind-output.mjs",
     "preview": "astro preview",
     "astro": "astro",
-    "check": "astro check"
+    "check": "astro check",
+    "check:links": "node scripts/check-links.mjs"
   },
   "dependencies": {
     "@astrojs/mdx": "^4.3.14",
