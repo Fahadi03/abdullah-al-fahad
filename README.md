@@ -356,6 +356,21 @@ behavior.
   article" above for why). Verified against a real, locally-synthesized
   3-second WAV — play, pause, seek, and speed change all confirmed
   working — then removed before committing. Done.
+- Step 11 — SEO, RSS, OG images, analytics, accessibility, Lighthouse,
+  CI. See "SEO, RSS, OG images, and CI" below for what each piece does
+  and, for the OG images specifically, the two rounds of debugging that
+  ended in a real architecture change (satori → a real headless
+  browser) rather than shipping output that looked fine at a glance but
+  silently mis-rendered Bangla. Lighthouse: 100/100/100 on performance,
+  accessibility and SEO, 96 on best-practices (the only ding confirmed
+  to be a local-testing artifact, not a real bug — see that section).
+  An axe-core accessibility audit across all 15 distinct page types
+  found and fixed 2 real issues; 0 remained on re-audit. Done.
+
+This closes out the build order in `PROMPT.md`. What's left is what the
+brief always said would come after v1: a real domain, real accounts for
+Upstash/Resend/Cusdis/Buttondown (see "Environment variables" above),
+and actually deploying.
 
 See `PROMPT.md` for the full build order.
 
@@ -381,3 +396,98 @@ way, so forcing English costs nothing there.
 The index only exists after a full `npm run build` — `astro dev` has no
 `/pagefind/pagefind.js` to fetch, so the search input on `/writings`
 stays disabled with an explanatory placeholder in dev.
+
+## SEO, RSS, OG images, and CI
+
+**Meta tags, canonical URLs, JSON-LD.** `BaseLayout` emits full Open
+Graph and Twitter card tags plus a `<link rel="canonical">` on every
+page, built from `SITE.url` — never the deployed hostname directly.
+JSON-LD: `Person` on `/about`, `BlogPosting` on writings and Assembly
+pieces (`@type` and `sameAs` pulled from real values, not placeholders).
+
+**Auto-generated OG images.** `scripts/build-og-images.mjs` runs before
+`astro build` (chained into `npm run build`) and writes a 1200×630 PNG
+per writings article and Assembly piece straight into `public/og/`,
+plus one default fallback — Astro never touches this, the files are
+just there by the time it builds, same as Pagefind's index. `public/og/`
+is gitignored; it's fully regenerated from content on every build, not
+authored content.
+
+That script renders through a real headless Chromium (Playwright), not
+the more common satori + resvg combination. That wasn't the starting
+choice — satori was tried first, since it's much lighter (no browser
+download) and is the standard tool for this. Two rounds of debugging
+changed that:
+
+1. As an Astro dynamic image endpoint, font loading broke inside
+   Astro's bundled SSR chunk — a woff2 decompression step that worked
+   perfectly in a standalone script silently produced garbage once
+   Vite bundled it.
+2. Worked around that by pre-converting fonts to `.ttf` offline, which
+   fixed loading but exposed something worse: satori's text layout
+   engine isn't a full shaper. It silently mis-rendered Bangla pre-base
+   vowel signs — "কেন" came out as "কনে", "লেখা" as "লেখো" — wrong
+   output rendered without any error, caught only by screenshotting,
+   cropping, and zooming into the actual pixels rather than trusting a
+   glance at the full image. That's the specific failure the brief
+   warns about ("must not fall back to a box-glyph font"), just a
+   subtler variant of it — no box, just silently wrong.
+
+A real browser's text engine shapes Indic scripts correctly, so the
+script embeds the site's fonts as base64 data URIs in a generated HTML
+page and screenshots it. Slower and heavier in CI (needs a Chromium
+download — see the GitHub Action below) but the output is actually
+correct, which is the part that was non-negotiable here.
+
+**RSS.** `/rss.xml` (writings) and `/assembly/rss.xml` (Assembly, kept
+separate per the brief) — both built with `@astrojs/rss`, item links
+built from `SITE.assemblyBase` rather than a hardcoded `/assembly`.
+
+**Sitemap and robots.txt.** `@astrojs/sitemap`, filtered to exclude
+`/admin/` (token-gated, nothing to index). `robots.txt` is a small
+dynamic endpoint rather than a static file, since it needs to point at
+whatever `SITE_URL` actually is rather than a hardcoded domain.
+
+**Favicon.** A plain "AF" monogram on the site's own accent teal —
+`public/favicon.svg` is the source of truth, `scripts/build-favicons.mjs`
+rasterizes the PNG sizes still needed alongside it (apple-touch-icon,
+manifest icons). Re-run that script if the mark ever changes.
+
+**Analytics.** `@vercel/analytics/astro`'s `<Analytics />` in
+`BaseLayout`. No cookie banner, no Google Analytics, per the brief.
+
+**Accessibility.** An `@axe-core/playwright` audit across all 15
+distinct page types found 2 real issues (a heading-order skip on
+`/writings`, a body-text link relying on color alone for contrast) —
+both fixed, 0 violations on re-audit. Everything else — focus rings,
+alt text, keyboard-reachable menus/filters/lightbox — was already
+correct from earlier steps rather than retrofitted here.
+
+**Lighthouse.** Run against the production build served statically
+(`npx serve dist/client`) — dev mode is never representative of real
+performance. Performance, accessibility and SEO all landed at 100;
+best-practices at 96, with the only flag (`errors-in-console`, from
+`/api/views` and Vercel Analytics' script both 404ing) confirmed to be
+an artifact of testing against a static-only file server with no
+serverless functions — re-running the same page through `astro dev`
+(where those routes actually exist) scored best-practices 100. Both
+will work for real once deployed to Vercel with real service
+credentials. The one genuine fix: the nav's "Start" link scored 0 on
+the SEO link-text audit (non-descriptive out of context on every
+page) — renamed to "Start here," which also happens to match the
+page's own `<h1>`.
+
+**CI** (`.github/workflows/ci.yml`, on push to `main` and on pull
+requests): install, install Chromium (the OG-image step needs it),
+type-check, build, then start the dev server and run
+`scripts/check-links.mjs` — a crawler that starts at `/`, follows every
+same-origin link it finds, and fails the build on any 4xx/5xx. It runs
+against a *live* server rather than checking hrefs against files in
+`dist/`, specifically so genuinely dynamic routes (`/contact`,
+`/guestbook`, `/admin/guestbook`, `/api/*`) get checked the same way as
+everything else instead of needing a hand-maintained "these are
+supposed to be missing from the static build" allowlist. `/404` is
+seeded into the crawl explicitly, since nothing links to it (it's
+Astro's routing fallback, not a clicked link) — its own 404 status is
+expected and exempted from the "must not be broken" check, while its
+content still gets crawled for further links.
