@@ -1,4 +1,4 @@
-const rawSiteUrl = import.meta.env.SITE_URL ?? "http://localhost:4321";
+const rawSiteUrl = import.meta.env.SITE_URL || "http://localhost:4321";
 
 export const SITE = {
   /** Canonical origin, no trailing slash. Every absolute URL is built from this. */
