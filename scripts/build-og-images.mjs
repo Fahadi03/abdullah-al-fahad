@@ -11,10 +11,32 @@
 // box-glyph font" failure the spec calls out, just a different flavor of
 // it. A real browser's text engine shapes Bangla correctly, so this uses
 // one — page.setContent() + screenshot, at exactly 1200x630.
-import { chromium } from "playwright";
+//
+// Locally, this launches Playwright's own downloaded Chromium. On Vercel,
+// that binary is missing system shared libraries the build image doesn't
+// ship (e.g. libnspr4.so) and there's no way to apt-get them in, so on
+// Vercel this instead launches @sparticuz/chromium — a statically-linked
+// Chromium built specifically for Lambda-style serverless build images —
+// through playwright-core.
 import matter from "gray-matter";
 import { readFile, mkdir, readdir } from "node:fs/promises";
 import path from "node:path";
+
+async function launchBrowser() {
+  if (process.env.VERCEL) {
+    const [{ chromium }, sparticuzChromium] = await Promise.all([
+      import("playwright-core"),
+      import("@sparticuz/chromium").then((m) => m.default),
+    ]);
+    return chromium.launch({
+      args: sparticuzChromium.args,
+      executablePath: await sparticuzChromium.executablePath(),
+      headless: true,
+    });
+  }
+  const { chromium } = await import("playwright");
+  return chromium.launch();
+}
 
 const SITE_URL = (process.env.SITE_URL || "http://localhost:4321").replace(/\/$/, "");
 const SITE_NAME = "Abdullah Al Fahad";
@@ -126,7 +148,7 @@ async function main() {
   await mkdir("public/og/writings", { recursive: true });
   await mkdir("public/og/assembly", { recursive: true });
 
-  const browser = await chromium.launch();
+  const browser = await launchBrowser();
   const page = await browser.newPage({ viewport: { width: 1200, height: 630 } });
 
   async function render(opts, outPath) {
