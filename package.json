@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
+    "postinstall": "playwright install chromium",
     "build": "node scripts/build-og-images.mjs && astro check && astro build && pagefind --site dist --force-language en && node scripts/copy-pagefind-output.mjs",
     "preview": "astro preview",
     "astro": "astro",
