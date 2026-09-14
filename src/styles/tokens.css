@@ -34,18 +34,22 @@
   --text-5xl: 3.815rem;
   --text-5xl--line-height: 4.1rem;
 
-  /* ---- Colour: light — near-black ink on warm off-white ---- */
-  --color-bg: #faf7f2;
-  --color-bg-raised: #f2ede3;
-  --color-text: #1a1815;
-  --color-text-muted: #6b6255;
-  --color-border: #e3dbcb;
-  --color-accent: #2b5d63;
-  --color-accent-ink: #f5f9f8;
+  /* ---- Colour: "Minimal Green" palette ----
+     #051F20  #0B2B26  #163832  #235347  #8EB69B  #DAF1DE
+     Light: deep-green ink on a pale mint ground. */
+  --color-bg: #f3faf4;
+  --color-bg-raised: #daf1de;
+  --color-text: #051f20;
+  --color-text-muted: #235347;
+  --color-border: #b8d6c0;
+  --color-accent: #235347;
+  --color-accent-ink: #daf1de;
+  /* Soft accent wash for glows and hover halos */
+  --color-accent-soft: rgba(35, 83, 71, 0.18);
 
   /* Assembly of Ideas gets its own accent within the same system */
-  --color-assembly-accent: #8a3a2b;
-  --color-assembly-accent-ink: #faf3ef;
+  --color-assembly-accent: #8a5a12;
+  --color-assembly-accent-ink: #fff6e6;
 
   /* ---- Motion ---- */
   --ease-editorial: cubic-bezier(0.16, 1, 0.3, 1);
@@ -53,36 +57,39 @@
   --duration-base: 200ms;
   --duration-slow: 250ms;
 
-  /* ---- Radii: hairline-and-rules aesthetic, kept small on purpose ---- */
-  --radius-sm: 0.125rem;
-  --radius-md: 0.25rem;
+  /* ---- Radii ---- */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 1rem;
 }
 
-/* True dark mode: designed, not inverted. Respects prefers-color-scheme by
-   default; [data-theme] on the root overrides when the user picks explicitly
-   via ThemeToggle (persisted to localStorage). */
+/* True dark mode: designed, not inverted. "System" (no data-theme) follows
+   prefers-color-scheme; [data-theme] on the root overrides when the user
+   picks Light or Dark explicitly via ThemeToggle (persisted to localStorage). */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --color-bg: #15130f;
-    --color-bg-raised: #1d1a15;
-    --color-text: #ece6d9;
-    --color-text-muted: #a89d89;
-    --color-border: #332e25;
-    --color-accent: #6fb0ae;
-    --color-accent-ink: #0e1f1e;
-    --color-assembly-accent: #d98a6e;
-    --color-assembly-accent-ink: #2a140d;
+    --color-bg: #051f20;
+    --color-bg-raised: #0b2b26;
+    --color-text: #daf1de;
+    --color-text-muted: #8eb69b;
+    --color-border: #163832;
+    --color-accent: #8eb69b;
+    --color-accent-ink: #051f20;
+    --color-accent-soft: rgba(142, 182, 155, 0.22);
+    --color-assembly-accent: #e8b25c;
+    --color-assembly-accent-ink: #2a1a04;
   }
 }
 
 :root[data-theme="dark"] {
-  --color-bg: #15130f;
-  --color-bg-raised: #1d1a15;
-  --color-text: #ece6d9;
-  --color-text-muted: #a89d89;
-  --color-border: #332e25;
-  --color-accent: #6fb0ae;
-  --color-accent-ink: #0e1f1e;
-  --color-assembly-accent: #d98a6e;
-  --color-assembly-accent-ink: #2a140d;
+  --color-bg: #051f20;
+  --color-bg-raised: #0b2b26;
+  --color-text: #daf1de;
+  --color-text-muted: #8eb69b;
+  --color-border: #163832;
+  --color-accent: #8eb69b;
+  --color-accent-ink: #051f20;
+  --color-accent-soft: rgba(142, 182, 155, 0.22);
+  --color-assembly-accent: #e8b25c;
+  --color-assembly-accent-ink: #2a1a04;
 }

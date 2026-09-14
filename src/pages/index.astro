@@ -63,7 +63,10 @@ const recent = [...recentWritings, ...recentVideos].sort((a, b) => b.date.valueO
     </section>
 
     <section class="entry-grid border-t border-border py-16">
-      <a href="/writings" class="entry-card">
+      <a href="/writings" class="entry-card card">
+        <span class="card-arrow" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round"><path d="M7 17 17 7M9 7h8v8"></path></svg>
+        </span>
         <span class="entry-label">Writings</span>
         {
           latestWriting ? (
@@ -83,7 +86,10 @@ const recent = [...recentWritings, ...recentVideos].sort((a, b) => b.date.valueO
 
       {
         latestPiece ? (
-          <a href={SITE.assemblyBase} class="entry-card entry-card-assembly">
+          <a href={SITE.assemblyBase} class="entry-card card entry-card-assembly">
+            <span class="card-arrow" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round"><path d="M7 17 17 7M9 7h8v8"></path></svg>
+            </span>
             <span class="entry-label">Assembly of Ideas — তত্ত্ব সভা</span>
             <h2 class="entry-title" lang={latestPiece.data.lang}>
               {latestPiece.data.title}
@@ -91,7 +97,7 @@ const recent = [...recentWritings, ...recentVideos].sort((a, b) => b.date.valueO
             <p class="entry-meta">Latest</p>
           </a>
         ) : (
-          <div class="entry-card entry-card-assembly" aria-disabled="true">
+          <div class="entry-card card entry-card-assembly" aria-disabled="true">
             <span class="entry-label">Assembly of Ideas — তত্ত্ব সভা</span>
             <p class="entry-meta">Coming soon</p>
           </div>
@@ -100,13 +106,16 @@ const recent = [...recentWritings, ...recentVideos].sort((a, b) => b.date.valueO
 
       {
         latestVideo ? (
-          <a href="/videos" class="entry-card">
+          <a href="/videos" class="entry-card card">
+            <span class="card-arrow" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round"><path d="M7 17 17 7M9 7h8v8"></path></svg>
+            </span>
             <span class="entry-label">Videos</span>
             <h2 class="entry-title">{latestVideo.data.title}</h2>
             <p class="entry-meta">Latest</p>
           </a>
         ) : (
-          <div class="entry-card" aria-disabled="true">
+          <div class="entry-card card" aria-disabled="true">
             <span class="entry-label">Videos</span>
             <p class="entry-meta">Coming soon</p>
           </div>
@@ -156,16 +165,6 @@ const recent = [...recentWritings, ...recentVideos].sort((a, b) => b.date.valueO
     gap: 0.75rem;
     padding: 1.75rem;
     min-height: 12rem;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    transition:
-      border-color var(--duration-fast) var(--ease-editorial),
-      background-color var(--duration-fast) var(--ease-editorial);
-  }
-
-  a.entry-card:hover {
-    border-color: var(--color-accent);
-    background-color: var(--color-bg-raised);
   }
 
   .entry-card[aria-disabled="true"] {
@@ -173,11 +172,20 @@ const recent = [...recentWritings, ...recentVideos].sort((a, b) => b.date.valueO
     opacity: 0.6;
   }
 
+  .entry-card-assembly::before {
+    background: var(--color-assembly-accent);
+  }
+
+  .entry-card-assembly .card-arrow {
+    color: var(--color-assembly-accent-ink);
+  }
+
   .entry-card-assembly .entry-label {
     color: var(--color-assembly-accent);
   }
 
   .entry-label {
+    padding-right: 2.5rem;
     font-family: var(--font-sans);
     font-size: var(--text-xs);
     font-weight: 500;

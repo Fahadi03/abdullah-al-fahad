@@ -18,13 +18,16 @@ const Heading = headingLevel;
 
 <a
   href={`/writings/${entry.id}`}
-  class="article-card group block rounded-md border border-border p-6 transition-colors duration-fast hover:border-accent"
+  class="article-card card group p-6"
   data-slug={entry.id}
   data-lang={lang}
   data-tags={entry.data.tags.join(",")}
   data-series={series?.id ?? ""}
 >
-  <div class="mb-3 flex flex-wrap items-center gap-2">
+  <span class="card-arrow" aria-hidden="true">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round"><path d="M7 17 17 7M9 7h8v8"></path></svg>
+  </span>
+  <div class="mb-3 flex flex-wrap items-center gap-2 pr-10">
     <LanguageChip lang={lang} />
     {series && <span class="font-sans text-xs text-text-muted">{series.data.title}</span>}
   </div>

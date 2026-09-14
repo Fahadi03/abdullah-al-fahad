@@ -11,7 +11,7 @@ const { title, description, youtubeId, duration, pubDate, topic } = video.data;
 const thumbnail = `https://i.ytimg.com/vi/${youtubeId}/hqdefault.jpg`;
 ---
 
-<article class="video-card" data-topic={topic}>
+<article class="video-card card" data-topic={topic}>
   <div class="video-facade" data-video-facade data-youtube-id={youtubeId} data-video-title={title}>
     <button type="button" class="video-play-btn" aria-label={`Play video: ${title}`}>
       <img src={thumbnail} alt="" loading="lazy" width="480" height="360" />
@@ -62,12 +62,6 @@ const thumbnail = `https://i.ytimg.com/vi/${youtubeId}/hqdefault.jpg`;
 </script>
 
 <style>
-  .video-card {
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    overflow: hidden;
-  }
-
   .video-facade {
     position: relative;
     aspect-ratio: 16 / 9;
@@ -108,14 +102,20 @@ const thumbnail = `https://i.ytimg.com/vi/${youtubeId}/hqdefault.jpg`;
     height: 3rem;
     padding: 0.75rem;
     border-radius: 999px;
-    background-color: rgba(20, 18, 15, 0.65);
-    color: #fff;
-    transition: background-color var(--duration-fast) var(--ease-editorial);
+    background-color: rgba(5, 31, 32, 0.7);
+    color: #daf1de;
+    box-shadow: 0 0 0 1px rgba(142, 182, 155, 0.4);
+    transition:
+      background-color var(--duration-fast) var(--ease-editorial),
+      color var(--duration-fast) var(--ease-editorial),
+      box-shadow var(--duration-slow) var(--ease-editorial);
   }
 
   .video-play-btn:hover .play-icon svg,
   .video-play-btn:focus-visible .play-icon svg {
     background-color: var(--color-accent);
+    color: var(--color-accent-ink);
+    box-shadow: 0 0 24px 4px var(--color-accent-soft);
   }
 
   .video-duration {
@@ -124,8 +124,8 @@ const thumbnail = `https://i.ytimg.com/vi/${youtubeId}/hqdefault.jpg`;
     bottom: 0.5rem;
     padding: 0.125rem 0.4rem;
     border-radius: var(--radius-sm);
-    background-color: rgba(20, 18, 15, 0.75);
-    color: #fff;
+    background-color: rgba(5, 31, 32, 0.8);
+    color: #daf1de;
     font-family: var(--font-sans);
     font-size: var(--text-xs);
   }

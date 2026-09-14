@@ -9,7 +9,10 @@ const { project } = Astro.props;
 const { title, description, role, stack, outcome } = project.data;
 ---
 
-<a href={`/projects/${project.id}`} class="project-card">
+<a href={`/projects/${project.id}`} class="project-card card">
+  <span class="card-arrow" aria-hidden="true">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round"><path d="M7 17 17 7M9 7h8v8"></path></svg>
+  </span>
   <h3 class="project-title">{title}</h3>
   <p class="project-problem">{description}</p>
 
@@ -31,24 +34,19 @@ const { title, description, role, stack, outcome } = project.data;
 
 <style>
   .project-card {
-    display: block;
     padding: 1.75rem;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    transition:
-      border-color var(--duration-fast) var(--ease-editorial),
-      background-color var(--duration-fast) var(--ease-editorial);
-  }
-
-  .project-card:hover {
-    border-color: var(--color-accent);
-    background-color: var(--color-bg-raised);
   }
 
   .project-title {
+    padding-right: 2.5rem;
     font-family: var(--font-serif);
     font-size: var(--text-xl);
     line-height: 1.3;
+    transition: color var(--duration-base) var(--ease-editorial);
+  }
+
+  .project-card:hover .project-title {
+    color: var(--color-accent);
   }
 
   .project-problem {
@@ -89,6 +87,7 @@ const { title, description, role, stack, outcome } = project.data;
     padding: 0.25rem 0.6rem;
     border-radius: 999px;
     border: 1px solid var(--color-border);
-    color: var(--color-text-muted);
+    background-color: var(--color-accent-soft);
+    color: var(--color-text);
   }
 </style>
