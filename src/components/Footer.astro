@@ -1,9 +1,7 @@
 ---
-import fs from "node:fs";
 import SocialIcon from "./SocialIcon.astro";
 import { SITE } from "../config/site";
 
-const hasPortrait = fs.existsSync(`public${SITE.portrait}`);
 const year = new Date().getFullYear();
 
 const links = [
@@ -20,8 +18,8 @@ const links = [
 
 <!--
   A dark, cinematic "screen" in every theme: near-black surface, thin column
-  rules, a glitching monochrome portrait, an orbiting ring and an oversized
-  serif word cropped by the bottom edge.
+  rules, a blue glow with orbiting rings and an oversized serif word cropped
+  by the bottom edge. The portrait appears only in the home hero.
 -->
 <footer class="site-footer" data-pagefind-ignore="all">
   <div class="footer-screen">
@@ -92,15 +90,9 @@ const links = [
       </div>
 
       <div class="footer-visual" aria-hidden="true">
+        <span class="footer-glow"></span>
         <span class="footer-ring"></span>
-        {
-          hasPortrait && (
-            <div class="footer-photo" style={`--portrait: url(${SITE.portrait})`}>
-              <span class="footer-slice slice-a" />
-              <span class="footer-slice slice-b" />
-            </div>
-          )
-        }
+        <span class="footer-ring footer-ring-inner"></span>
       </div>
     </div>
 
@@ -391,93 +383,22 @@ const links = [
     transform: translateY(-2px);
   }
 
-  /* ---------- Portrait visual ---------- */
+  /* ---------- Decorative visual: blue glow + orbiting rings (desktop only) ---------- */
   .footer-visual {
+    display: none;
     position: relative;
-    min-height: 19rem;
   }
 
-  .footer-photo {
+  .footer-glow {
     position: absolute;
-    inset: 0;
-    background: var(--portrait) 50% 18% / cover no-repeat;
-    filter: grayscale(1) contrast(1.2) brightness(0.62);
-    -webkit-mask-image:
-      linear-gradient(to bottom, transparent 0%, #000 22%, #000 70%, transparent 100%),
-      linear-gradient(to right, transparent 0%, #000 30%);
-    -webkit-mask-composite: source-in;
-    mask-image:
-      linear-gradient(to bottom, transparent 0%, #000 22%, #000 70%, transparent 100%),
-      linear-gradient(to right, transparent 0%, #000 30%);
-    mask-composite: intersect;
-  }
-
-  /* Scanlines */
-  .footer-photo::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    z-index: 2;
-    background: repeating-linear-gradient(to bottom, rgba(0, 0, 0, 0.35) 0 1px, transparent 1px 3px);
-  }
-
-  /* Cool blue cast over the monochrome image */
-  .footer-photo::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    z-index: 3;
-    background: linear-gradient(200deg, rgba(26, 140, 255, 0.35), rgba(26, 179, 211, 0.12) 60%, transparent);
-    mix-blend-mode: screen;
-  }
-
-  /* Two horizontal strips of the same image that jump sideways now and then */
-  .footer-slice {
-    position: absolute;
-    inset: 0;
-    z-index: 1;
-    background: inherit;
-  }
-
-  .slice-a {
-    clip-path: inset(24% 0 68% 0);
-    animation: footer-glitch-a 7s steps(1) infinite;
-  }
-
-  .slice-b {
-    clip-path: inset(56% 0 36% 0);
-    animation: footer-glitch-b 7s steps(1) infinite 0.35s;
-  }
-
-  @keyframes footer-glitch-a {
-    0%,
-    84%,
-    100% {
-      transform: translateX(0);
-    }
-    86% {
-      transform: translateX(-18px);
-    }
-    89% {
-      transform: translateX(12px);
-    }
-    92% {
-      transform: translateX(-5px);
-    }
-  }
-
-  @keyframes footer-glitch-b {
-    0%,
-    85%,
-    100% {
-      transform: translateX(0);
-    }
-    87% {
-      transform: translateX(16px);
-    }
-    90% {
-      transform: translateX(-9px);
-    }
+    top: 50%;
+    left: 55%;
+    width: 24rem;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(26, 120, 255, 0.32), rgba(26, 179, 211, 0.1) 55%, transparent);
+    transform: translate(-50%, -50%);
+    pointer-events: none;
   }
 
   .footer-ring {
@@ -545,13 +466,25 @@ const links = [
     }
 
     .footer-visual {
-      min-height: 0;
+      display: block;
     }
 
     .footer-ring {
       top: -6rem;
       right: -10rem;
       width: 28rem;
+    }
+
+    /* Smaller, fainter ring turning the other way */
+    .footer-ring-inner {
+      top: 50%;
+      right: auto;
+      left: 55%;
+      width: 15rem;
+      margin: -7.5rem 0 0 -7.5rem;
+      border-color: rgba(230, 246, 249, 0.2);
+      animation-duration: 18s;
+      animation-direction: reverse;
     }
   }
 

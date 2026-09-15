@@ -6,7 +6,7 @@ export const SITE = {
   name: "Abdullah Al Fahad",
   tagline: "Writing, research and a home for Assembly of Ideas",
   author: "Abdullah Al Fahad",
-  /** Portrait under /public, used by the home page and the footer (both fall back gracefully if missing). */
+  /** Portrait under /public, shown only in the home hero (falls back to a monogram if missing). */
   portrait: "/images/fahad-portrait.webp",
   defaultLocale: "en" as const,
   locales: ["en", "bn"] as const,
