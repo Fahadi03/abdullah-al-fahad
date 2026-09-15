@@ -10,9 +10,6 @@ const { title, description, role, stack, outcome } = project.data;
 ---
 
 <a href={`/projects/${project.id}`} class="project-card card">
-  <span class="card-arrow" aria-hidden="true">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round"><path d="M7 17 17 7M9 7h8v8"></path></svg>
-  </span>
   <h3 class="project-title">{title}</h3>
   <p class="project-problem">{description}</p>
 
@@ -38,7 +35,6 @@ const { title, description, role, stack, outcome } = project.data;
   }
 
   .project-title {
-    padding-right: 2.5rem;
     font-family: var(--font-serif);
     font-size: var(--text-xl);
     line-height: 1.3;

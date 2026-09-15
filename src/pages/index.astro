@@ -1,210 +1,976 @@
 ---
+import fs from "node:fs";
 import { getCollection } from "astro:content";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Header from "../components/Header.astro";
-import ArticleCard from "../components/ArticleCard.astro";
-import VideoCard from "../components/VideoCard.astro";
 import NewsletterForm from "../components/NewsletterForm.astro";
-import { getPublishedWritings, getAllSeries, resolveSeries } from "../lib/writings";
+import { getPublishedWritings, resolveSeries } from "../lib/writings";
 import { getPublishedVideos } from "../lib/videos";
-import { estimateReadingMinutes } from "../lib/reading-time";
-import { formatNumber } from "../lib/numerals";
-import { SITE } from "../config/site";
+import { formatDate } from "../lib/numerals";
+import { SITE, type Locale } from "../config/site";
+
+// Portrait lives in /public so it can be swapped without touching code.
+// Until it exists, the photo slot shows a monogram instead of a broken image.
+const PORTRAIT = "/images/fahad-portrait.webp";
+const hasPortrait = fs.existsSync(`public${PORTRAIT}`);
 
 const writings = await getPublishedWritings();
-const allSeries = await getAllSeries();
 const videos = await getPublishedVideos();
 const assemblyPieces = (
   await getCollection("assembly", (entry) => import.meta.env.DEV || !entry.data.draft)
 ).sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+const projects = (
+  await getCollection("projects", (entry) => import.meta.env.DEV || !entry.data.draft)
+).sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
 
-const latestWriting = writings[0];
-const latestWritingSeries = latestWriting ? await resolveSeries(latestWriting) : undefined;
-const latestVideo = videos[0];
-const latestPiece = assemblyPieces[0];
+interface PortfolioItem {
+  href: string;
+  kicker: string;
+  title: string;
+  description: string;
+  lang: Locale;
+  date: Date;
+  cta: string;
+  image?: string;
+}
 
-// "Recent" mixes articles and videos, newest first.
-const recentWritings = await Promise.all(
-  writings.map(async (entry) => ({
-    kind: "writing" as const,
-    date: entry.data.pubDate,
-    entry,
-    series: await resolveSeries(entry),
-    readingMinutes: estimateReadingMinutes(entry.body ?? "", entry.data.lang),
-  })),
+const writingItems: PortfolioItem[] = await Promise.all(
+  writings.slice(0, 8).map(async (entry) => {
+    const series = await resolveSeries(entry);
+    return {
+      href: `/writings/${entry.id}`,
+      kicker: series?.data.title ?? (entry.data.lang === "bn" ? "বাংলা" : "English"),
+      title: entry.data.title,
+      description: entry.data.description,
+      lang: entry.data.lang,
+      date: entry.data.pubDate,
+      cta: "Read",
+    };
+  }),
 );
-const recentVideos = videos.map((video) => ({ kind: "video" as const, date: video.data.pubDate, video }));
-const recent = [...recentWritings, ...recentVideos].sort((a, b) => b.date.valueOf() - a.date.valueOf()).slice(0, 4);
+
+const assemblyItems: PortfolioItem[] = assemblyPieces.slice(0, 8).map((piece) => ({
+  href: `${SITE.assemblyBase}/${piece.id}`,
+  kicker: "তত্ত্ব সভা",
+  title: piece.data.title,
+  description: piece.data.description,
+  lang: piece.data.lang,
+  date: piece.data.pubDate,
+  cta: "Read",
+}));
+
+const videoItems: PortfolioItem[] = videos.slice(0, 8).map((video) => ({
+  href: "/videos",
+  kicker: video.data.topic,
+  title: video.data.title,
+  description: video.data.description,
+  lang: "en",
+  date: video.data.pubDate,
+  cta: "Watch",
+  image: `https://i.ytimg.com/vi/${video.data.youtubeId}/hqdefault.jpg`,
+}));
+
+const projectItems: PortfolioItem[] = projects.slice(0, 8).map((project) => ({
+  href: `/projects/${project.id}`,
+  kicker: project.data.stack.slice(0, 2).join(" · "),
+  title: project.data.title,
+  description: project.data.description,
+  lang: "en",
+  date: project.data.pubDate,
+  cta: "View",
+}));
+
+// Only categories with something in them get a tab.
+const tabs = [
+  { id: "writings", label: "Writings", word: "Writing", items: writingItems, all: "/writings" },
+  { id: "assembly", label: "Assembly", word: "Assembly", items: assemblyItems, all: SITE.assemblyBase },
+  { id: "videos", label: "Videos", word: "Video", items: videoItems, all: "/videos" },
+  { id: "projects", label: "Projects", word: "Project", items: projectItems, all: "/projects" },
+].filter((tab) => tab.items.length > 0);
 ---
 
 <BaseLayout title="Home" description={SITE.tagline}>
   <Header />
 
-  <main class="mx-auto max-w-5xl px-6 sm:px-10">
-    <section class="py-20 sm:py-28">
-      <h1 class="max-w-2xl font-serif text-4xl leading-tight text-balance sm:text-5xl">{SITE.name}</h1>
-      <p class="mt-4 max-w-xl font-serif text-lg text-text-muted">
-        I write about research and machine learning, build software, and run Assembly of Ideas — a home
-        for Bangla literature and history.
-      </p>
-      <p class="mt-8 font-sans text-xs text-text-muted">
-        {formatNumber(writings.length, "en")} article{writings.length === 1 ? "" : "s"} · {
-          formatNumber(allSeries.length, "en")
-        } series
-        {
-          videos.length > 0 && (
-            <>
-              {" "}
-              · {formatNumber(videos.length, "en")} video{videos.length === 1 ? "" : "s"}
-            </>
-          )
-        }
-      </p>
-    </section>
-
-    <section class="entry-grid border-t border-border py-16">
-      <a href="/writings" class="entry-card card">
-        <span class="card-arrow" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round"><path d="M7 17 17 7M9 7h8v8"></path></svg>
-        </span>
-        <span class="entry-label">Writings</span>
-        {
-          latestWriting ? (
-            <>
-              <h2 class="entry-title" lang={latestWriting.data.lang}>
-                {latestWriting.data.title}
-              </h2>
-              <p class="entry-meta">
-                Latest{latestWritingSeries ? ` · ${latestWritingSeries.data.title}` : ""}
-              </p>
-            </>
-          ) : (
-            <p class="entry-meta">Coming soon</p>
-          )
-        }
+  <main class="home">
+    <!-- ================= HERO ================= -->
+    <section class="panel hero" aria-labelledby="hero-name">
+      <a href="/writings" class="hero-search" aria-label="Search writings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round">
+          <circle cx="10.5" cy="10.5" r="6.5"></circle>
+          <path d="m15.5 15.5 5 5"></path>
+        </svg>
       </a>
 
-      {
-        latestPiece ? (
-          <a href={SITE.assemblyBase} class="entry-card card entry-card-assembly">
-            <span class="card-arrow" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round"><path d="M7 17 17 7M9 7h8v8"></path></svg>
-            </span>
-            <span class="entry-label">Assembly of Ideas — তত্ত্ব সভা</span>
-            <h2 class="entry-title" lang={latestPiece.data.lang}>
-              {latestPiece.data.title}
-            </h2>
-            <p class="entry-meta">Latest</p>
-          </a>
-        ) : (
-          <div class="entry-card card entry-card-assembly" aria-disabled="true">
-            <span class="entry-label">Assembly of Ideas — তত্ত্ব সভা</span>
-            <p class="entry-meta">Coming soon</p>
-          </div>
-        )
-      }
+      <div class="photo hero-photo">
+        {
+          hasPortrait ? (
+            <img src={PORTRAIT} alt={`Portrait of ${SITE.name}`} width="960" height="1200" fetchpriority="high" />
+          ) : (
+            <span class="photo-fallback" aria-hidden="true">AF</span>
+          )
+        }
+      </div>
 
-      {
-        latestVideo ? (
-          <a href="/videos" class="entry-card card">
-            <span class="card-arrow" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round"><path d="M7 17 17 7M9 7h8v8"></path></svg>
-            </span>
-            <span class="entry-label">Videos</span>
-            <h2 class="entry-title">{latestVideo.data.title}</h2>
-            <p class="entry-meta">Latest</p>
-          </a>
-        ) : (
-          <div class="entry-card card" aria-disabled="true">
-            <span class="entry-label">Videos</span>
-            <p class="entry-meta">Coming soon</p>
-          </div>
-        )
-      }
+      <div class="hero-copy">
+        <p class="hero-kicker"><span>CSE Student &amp; Writer</span></p>
+        <h1 id="hero-name" class="hero-name">{SITE.name}</h1>
+        <p class="hero-role"><span>Full-Stack Developer</span></p>
+
+        <p class="hero-tagline">
+          I write about research and machine learning, build software, and run Assembly of Ideas — a home for
+          Bangla literature and history.
+        </p>
+
+        <div class="hero-actions">
+          <a href="/writings" class="btn btn-primary">Read my writing</a>
+          <a href="/contact" class="btn btn-outline">Contact me</a>
+        </div>
+      </div>
     </section>
 
+    <!-- ================= ABOUT ================= -->
+    <section class="panel about" aria-labelledby="about-title">
+      <div class="about-card">
+        <p class="about-hello">Hi there!</p>
+        <h2 id="about-title" class="about-title">
+          <span class="about-im">I'm</span>
+          <span class="about-name">Fahad</span>
+          <span class="about-role">A CSE Student &amp; Full-Stack Developer</span>
+        </h2>
+        <p class="about-bio">
+          I'm a final-year Computer Science and Engineering student at Northern University Bangladesh and a Junior
+          Full-Stack Developer at FabTech.IT. I write an episode-style Bangla series on research, datasets and
+          machine learning, practical technical notes in English, and since February 2025 I've run Assembly of
+          Ideas — a small home for literature and Bangla historical writing.
+        </p>
+        <a href="/about" class="btn btn-primary about-more">Read more</a>
+      </div>
+
+      <div class="photo about-photo">
+        {
+          hasPortrait ? (
+            <img src={PORTRAIT} alt="" width="960" height="1200" loading="lazy" />
+          ) : (
+            <span class="photo-fallback" aria-hidden="true">AF</span>
+          )
+        }
+      </div>
+
+      <div class="about-follow">
+        <span class="follow-label">Follow me</span>
+        <a href={SITE.social.github} target="_blank" rel="noopener noreferrer" class="social" aria-label="GitHub">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M12 .5A11.5 11.5 0 0 0 .5 12a11.5 11.5 0 0 0 7.86 10.92c.58.1.79-.25.79-.56v-2c-3.2.7-3.87-1.37-3.87-1.37-.53-1.33-1.29-1.69-1.29-1.69-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.68 0-1.26.45-2.28 1.19-3.08-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.78 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.8 1.19 1.82 1.19 3.08 0 4.41-2.69 5.38-5.26 5.67.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 23.5 12 11.5 11.5 0 0 0 12 .5Z"></path>
+          </svg>
+        </a>
+        <a href={SITE.social.linkedin} target="_blank" rel="noopener noreferrer" class="social" aria-label="LinkedIn">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.34V9h3.42v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28ZM5.34 7.43a2.06 2.06 0 1 1 0-4.13 2.06 2.06 0 0 1 0 4.13ZM7.12 20.45H3.56V9h3.56v11.45ZM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.73V1.73C24 .77 23.2 0 22.22 0Z"></path>
+          </svg>
+        </a>
+        <span class="follow-handle">Fahadi03</span>
+      </div>
+    </section>
+
+    <!-- ================= PORTFOLIO ================= -->
     {
-      recent.length > 0 && (
-        <section class="border-t border-border py-16">
-          <h2 class="mb-8 font-sans text-sm font-medium uppercase tracking-wide text-text-muted">Recent</h2>
-          <div class="grid gap-6 sm:grid-cols-2">
-            {recent.map((item) =>
-              item.kind === "writing" ? (
-                <ArticleCard entry={item.entry} series={item.series} readingMinutes={item.readingMinutes} />
-              ) : (
-                <VideoCard video={item.video} />
-              ),
-            )}
+      tabs.length > 0 && (
+        <section class="panel portfolio" aria-labelledby="portfolio-title" data-portfolio>
+          <div class="portfolio-head">
+            <h2 id="portfolio-title" class="eyebrow">
+              Featured work <span class="eyebrow-sep">|</span> Latest
+            </h2>
+          </div>
+
+          {tabs.map((tab, tabIndex) => (
+            <div
+              class="carousel"
+              id={`panel-${tab.id}`}
+              role="tabpanel"
+              aria-labelledby={`tab-${tab.id}`}
+              data-carousel
+              hidden={tabIndex !== 0}
+            >
+              <button type="button" class="carousel-arrow prev" data-carousel-prev aria-label={`Previous ${tab.label}`}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                  <path d="m15 5-7 7 7 7" />
+                </svg>
+              </button>
+
+              <div class="carousel-track" data-carousel-track>
+                {tab.items.map((item) => (
+                  <a href={item.href} class="poster card" data-carousel-item>
+                    {item.image ? (
+                      <img class="poster-image" src={item.image} alt="" loading="lazy" width="480" height="360" />
+                    ) : (
+                      <span class="poster-word" aria-hidden="true">
+                        {tab.word}
+                      </span>
+                    )}
+                    <span class="poster-kicker" lang={item.lang}>
+                      {item.kicker}
+                    </span>
+                    <h3 class="poster-title" lang={item.lang}>
+                      {item.title}
+                    </h3>
+                    <p class="poster-desc" lang={item.lang}>
+                      {item.description}
+                    </p>
+                    <span class="poster-meta">
+                      <time datetime={item.date.toISOString()} lang={item.lang}>
+                        {formatDate(item.date, item.lang)}
+                      </time>
+                      <span class="poster-cta">{item.cta} →</span>
+                    </span>
+                  </a>
+                ))}
+              </div>
+
+              <button type="button" class="carousel-arrow next" data-carousel-next aria-label={`Next ${tab.label}`}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                  <path d="m9 5 7 7-7 7" />
+                </svg>
+              </button>
+
+              <a href={tab.all} class="carousel-all">
+                See all {tab.label.toLowerCase()} →
+              </a>
+            </div>
+          ))}
+
+          <div class="portfolio-tabs" role="tablist" aria-label="Work categories">
+            {tabs.map((tab, tabIndex) => (
+              <button
+                type="button"
+                role="tab"
+                id={`tab-${tab.id}`}
+                class="portfolio-tab"
+                aria-controls={`panel-${tab.id}`}
+                aria-selected={tabIndex === 0 ? "true" : "false"}
+                tabindex={tabIndex === 0 ? 0 : -1}
+                data-portfolio-tab
+              >
+                {tab.label}
+              </button>
+            ))}
           </div>
         </section>
       )
     }
 
-    <section class="border-t border-border py-16">
+    <section class="panel newsletter">
       <NewsletterForm />
     </section>
   </main>
 </BaseLayout>
 
 <style>
-  .entry-grid {
-    display: grid;
-    gap: 1.5rem;
-    grid-template-columns: 1fr;
+  .home {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    max-width: 80rem;
+    margin-inline: auto;
+    padding: 1.5rem 1rem 4rem;
   }
 
-  @media (min-width: 768px) {
-    .entry-grid {
-      grid-template-columns: repeat(3, 1fr);
+  @media (min-width: 640px) {
+    .home {
+      gap: 3rem;
+      padding: 2.5rem 2.5rem 5rem;
     }
   }
 
-  .entry-card {
+  /* ---------- Shared photo treatment: teal-tinted, fading into the panel ---------- */
+  .photo {
+    position: relative;
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(to bottom, #000 70%, transparent 100%);
+    mask-image: linear-gradient(to bottom, #000 70%, transparent 100%);
+  }
+
+  .photo img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 50% 20%;
+    filter: saturate(0.85) contrast(1.05);
+  }
+
+  .photo::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(160deg, transparent 30%, var(--color-accent) 130%);
+    mix-blend-mode: color;
+    opacity: 0.45;
+    pointer-events: none;
+  }
+
+  .photo-fallback {
+    display: grid;
+    place-items: center;
+    width: 100%;
+    height: 100%;
+    font-family: var(--font-display);
+    font-size: clamp(8rem, 22vw, 16rem);
+    line-height: 1;
+    color: transparent;
+    -webkit-text-stroke: 2px var(--color-accent);
+    opacity: 0.5;
+  }
+
+  /* ---------- HERO ---------- */
+  .hero {
+    display: grid;
+    grid-template-columns: 1fr;
+    min-height: 34rem;
+  }
+
+  .hero-search {
+    position: absolute;
+    top: 1.25rem;
+    right: 1.25rem;
+    z-index: 2;
+    display: grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    color: var(--color-accent);
+    transition: transform var(--duration-slow) var(--ease-editorial);
+  }
+
+  .hero-search svg {
+    width: 2rem;
+    height: 2rem;
+  }
+
+  .hero-search:hover {
+    transform: scale(1.1) rotate(-8deg);
+  }
+
+  .hero-photo {
+    height: 22rem;
+  }
+
+  .hero-copy {
+    position: relative;
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
-    padding: 1.75rem;
-    min-height: 12rem;
+    align-items: center;
+    padding: 0 1.25rem 2.5rem;
+    margin-top: -4rem;
+    text-align: center;
   }
 
-  .entry-card[aria-disabled="true"] {
-    color: var(--color-text-muted);
-    opacity: 0.6;
-  }
-
-  .entry-card-assembly::before {
-    background: var(--color-assembly-accent);
-  }
-
-  .entry-card-assembly .card-arrow {
-    color: var(--color-assembly-accent-ink);
-  }
-
-  .entry-card-assembly .entry-label {
-    color: var(--color-assembly-accent);
-  }
-
-  .entry-label {
-    padding-right: 2.5rem;
+  .hero-kicker,
+  .hero-role {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    width: 100%;
+    max-width: 34rem;
     font-family: var(--font-sans);
-    font-size: var(--text-xs);
-    font-weight: 500;
+    font-size: clamp(0.7rem, 1.6vw, 0.875rem);
+    font-weight: 700;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
-    letter-spacing: 0.02em;
-    color: var(--color-text-muted);
+    white-space: nowrap;
   }
 
-  .entry-title {
-    font-family: var(--font-serif);
-    font-size: var(--text-xl);
-    line-height: 1.3;
-    margin-top: auto;
+  /* The cyan bars: after the kicker, before the role */
+  .hero-kicker::after,
+  .hero-role::before {
+    content: "";
+    flex: 1;
+    height: 0.5rem;
+    border-radius: 999px;
+    background-color: var(--color-accent);
+    box-shadow: 0 0 14px var(--color-accent-soft);
   }
 
-  .entry-meta {
+  .hero-name {
+    max-width: 34rem;
+    margin-block: 0.25rem;
+    font-family: var(--font-display);
+    font-size: clamp(3.4rem, 12vw, 6.75rem);
+    font-weight: 400;
+    line-height: 0.88;
+    letter-spacing: 0.01em;
+    color: var(--color-accent);
+    text-shadow: 0 0 40px var(--color-accent-soft);
+    text-wrap: balance;
+  }
+
+  .hero-tagline {
+    max-width: 30rem;
+    margin-top: 1.5rem;
     font-family: var(--font-sans);
-    font-size: var(--text-xs);
+    font-size: 0.9375rem;
+    line-height: 1.65;
     color: var(--color-text-muted);
+  }
+
+  .hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-top: 2rem;
+  }
+
+  @media (min-width: 900px) {
+    .hero {
+      grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+      align-items: center;
+      min-height: clamp(34rem, 72vh, 42rem);
+    }
+
+    .hero-photo {
+      align-self: stretch;
+      height: auto;
+      -webkit-mask-image:
+        linear-gradient(to right, #000 55%, transparent 100%),
+        linear-gradient(to bottom, #000 80%, transparent 100%);
+      -webkit-mask-composite: source-in;
+      mask-image:
+        linear-gradient(to right, #000 55%, transparent 100%),
+        linear-gradient(to bottom, #000 80%, transparent 100%);
+      mask-composite: intersect;
+    }
+
+    .hero-copy {
+      margin-top: 0;
+      padding: 4rem 3.5rem 4rem 0;
+    }
+  }
+
+  /* ---------- ABOUT ---------- */
+  .about {
+    display: grid;
+    grid-template-columns: 1fr;
+    padding: 1.25rem;
+  }
+
+  .about-card {
+    position: relative;
+    z-index: 1;
+    padding: 1.75rem 1.5rem;
+    border-radius: var(--radius-lg);
+    background: color-mix(in srgb, var(--color-accent) 12%, var(--color-panel));
+    border: 1px solid color-mix(in srgb, var(--color-accent) 25%, transparent);
+  }
+
+  .about-hello {
+    font-family: var(--font-sans);
+    font-size: 1rem;
+  }
+
+  .about-title {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    column-gap: 0.625rem;
+    margin-top: 0.25rem;
+  }
+
+  .about-im {
+    font-family: var(--font-sans);
+    font-size: 2rem;
+    font-weight: 500;
+  }
+
+  .about-name {
+    font-family: var(--font-display);
+    font-size: 3rem;
+    line-height: 1;
+    letter-spacing: 0.02em;
+    color: var(--color-accent);
+  }
+
+  .about-role {
+    font-family: var(--font-sans);
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--color-text-muted);
+  }
+
+  .about-bio {
+    max-width: 38rem;
+    margin-top: 1rem;
+    font-family: var(--font-sans);
+    font-size: 0.9375rem;
+    line-height: 1.7;
+  }
+
+  .about-more {
+    margin-top: 1.5rem;
+    min-height: 2.25rem;
+    padding-inline: 1.1rem;
+    font-size: 0.75rem;
+  }
+
+  .about-photo {
+    height: 20rem;
+    margin-top: -1rem;
+  }
+
+  .about-follow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.625rem;
+    padding-top: 1rem;
+    border-top: 3px solid var(--color-accent);
+  }
+
+  .follow-label,
+  .follow-handle {
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .follow-label {
+    margin-right: 0.5rem;
+  }
+
+  .follow-handle {
+    margin-left: 0.75rem;
+    color: var(--color-text-muted);
+  }
+
+  .social {
+    display: grid;
+    place-items: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 999px;
+    background-color: var(--color-accent);
+    color: var(--color-accent-ink);
+    transition:
+      transform var(--duration-slow) var(--ease-editorial),
+      box-shadow var(--duration-slow) var(--ease-editorial);
+  }
+
+  .social svg {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  .social:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 18px var(--color-accent-soft), 0 0 0 4px var(--color-accent-soft);
+  }
+
+  @media (min-width: 900px) {
+    .about {
+      grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+      grid-template-rows: 1fr auto;
+      padding: 2.5rem 0 1.75rem 2.5rem;
+      column-gap: 0;
+    }
+
+    .about-card {
+      grid-column: 1;
+      grid-row: 1;
+      align-self: center;
+      margin-right: -6rem;
+      padding: 2.25rem 8rem 2.25rem 2.25rem;
+    }
+
+    .about-photo {
+      grid-column: 2;
+      grid-row: 1 / span 2;
+      align-self: stretch;
+      height: auto;
+      min-height: 28rem;
+      margin: -2.5rem 0 -1.75rem;
+      -webkit-mask-image:
+        linear-gradient(to left, #000 60%, transparent 100%),
+        linear-gradient(to bottom, #000 75%, transparent 100%);
+      -webkit-mask-composite: source-in;
+      mask-image:
+        linear-gradient(to left, #000 60%, transparent 100%),
+        linear-gradient(to bottom, #000 75%, transparent 100%);
+      mask-composite: intersect;
+    }
+
+    .about-follow {
+      grid-column: 1;
+      grid-row: 2;
+      margin-top: 1.75rem;
+    }
+  }
+
+  /* ---------- PORTFOLIO ---------- */
+  .portfolio {
+    padding: 1.75rem 0 1.5rem;
+  }
+
+  .portfolio-head {
+    padding-inline: 1.25rem;
+  }
+
+  .eyebrow-sep {
+    color: var(--color-accent);
+  }
+
+  .carousel {
+    position: relative;
+    margin-top: 1.5rem;
+  }
+
+  .carousel-track {
+    --poster-w: clamp(15rem, 70vw, 19rem);
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    padding: 1.5rem calc(50% - var(--poster-w) / 2) 2rem;
+    scrollbar-width: none;
+  }
+
+  .carousel-track::-webkit-scrollbar {
+    display: none;
+  }
+
+  .poster {
+    flex: 0 0 var(--poster-w);
+    display: flex;
+    flex-direction: column;
+    aspect-ratio: 3 / 4;
+    padding: 1.5rem;
+    scroll-snap-align: center;
+    transform: scale(0.88);
+    opacity: 0.6;
+    transition:
+      transform 400ms var(--ease-editorial),
+      opacity 400ms var(--ease-editorial),
+      border-color var(--duration-base) var(--ease-editorial),
+      box-shadow 400ms var(--ease-editorial);
+  }
+
+  .poster.is-center {
+    transform: scale(1);
+    opacity: 1;
+    border-color: var(--color-accent);
+    box-shadow:
+      0 0 0 1px var(--color-accent),
+      0 0 40px -6px var(--color-accent);
+  }
+
+  /* Global .card hover lifts with translateY — keep the carousel scale instead. */
+  .poster:not(.is-center):hover {
+    transform: scale(0.9);
+    opacity: 0.85;
+  }
+
+  .poster.is-center:hover {
+    transform: scale(1.02);
+  }
+
+  .poster-image {
+    width: calc(100% + 3rem);
+    max-width: none;
+    margin: -1.5rem -1.5rem 1rem;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+  }
+
+  .poster-word {
+    font-family: var(--font-display);
+    font-size: 4.5rem;
+    line-height: 0.85;
+    color: transparent;
+    -webkit-text-stroke: 1.5px var(--color-accent);
+    opacity: 0.45;
+    text-transform: uppercase;
+  }
+
+  .poster-kicker {
     margin-top: auto;
+    font-family: var(--font-sans);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+  }
+
+  .poster-kicker:lang(bn) {
+    font-family: var(--font-display-bn);
+    font-size: 0.8125rem;
+    letter-spacing: 0;
+    line-height: 1.4;
+  }
+
+  .poster-title {
+    margin-top: 0.375rem;
+    font-family: var(--font-display);
+    font-size: 2rem;
+    font-weight: 400;
+    line-height: 0.95;
+    letter-spacing: 0.01em;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .poster-title:lang(bn) {
+    font-family: var(--font-display-bn);
+    font-size: 1.5rem;
+    font-weight: 600;
+    line-height: 1.35;
+  }
+
+  .poster-desc {
+    margin-top: 0.625rem;
+    font-family: var(--font-sans);
+    font-size: 0.8125rem;
+    line-height: 1.55;
+    color: var(--color-text-muted);
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .poster-desc:lang(bn) {
+    font-family: var(--font-serif-bn);
+    line-height: 1.7;
+  }
+
+  .poster-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--color-border);
+    font-family: var(--font-sans);
+    font-size: 0.6875rem;
+    color: var(--color-text-muted);
+  }
+
+  .poster-cta {
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+  }
+
+  .carousel-arrow {
+    position: absolute;
+    top: 50%;
+    z-index: 2;
+    display: grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    margin-top: -1.75rem;
+    color: var(--color-accent);
+    transition:
+      transform var(--duration-slow) var(--ease-editorial),
+      opacity var(--duration-base) ease;
+  }
+
+  .carousel-arrow svg {
+    width: 1.75rem;
+    height: 1.75rem;
+  }
+
+  .carousel-arrow.prev {
+    left: 0.25rem;
+  }
+
+  .carousel-arrow.next {
+    right: 0.25rem;
+  }
+
+  .carousel-arrow:hover {
+    transform: scale(1.15);
+  }
+
+  .carousel-arrow:disabled {
+    opacity: 0.25;
+    transform: none;
+    cursor: default;
+  }
+
+  .carousel-all {
+    display: block;
+    width: fit-content;
+    margin: -0.5rem auto 0;
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+  }
+
+  .carousel-all:hover {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .portfolio-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem 1.25rem;
+    margin: 1.5rem 1.25rem 0;
+    padding-top: 1.25rem;
+    border-top: 3px solid var(--color-accent);
+  }
+
+  .portfolio-tab {
+    min-height: 2.25rem;
+    padding-inline: 1rem;
+    border-radius: 999px;
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-text);
+    transition:
+      background-color var(--duration-base) var(--ease-editorial),
+      color var(--duration-base) var(--ease-editorial);
+  }
+
+  .portfolio-tab:hover {
+    color: var(--color-accent);
+  }
+
+  .portfolio-tab[aria-selected="true"] {
+    background-color: var(--color-accent);
+    color: var(--color-accent-ink);
+    box-shadow: 0 0 16px -2px var(--color-accent-soft);
+  }
+
+  @media (min-width: 900px) {
+    .portfolio {
+      padding: 2.25rem 0 1.75rem;
+    }
+
+    .portfolio-head {
+      padding-inline: 2.5rem;
+    }
+
+    .carousel-arrow.prev {
+      left: 1.5rem;
+    }
+
+    .carousel-arrow.next {
+      right: 1.5rem;
+    }
+
+    .portfolio-tabs {
+      margin-inline: 2.5rem;
+    }
+  }
+
+  /* ---------- NEWSLETTER ---------- */
+  .newsletter {
+    padding: 2rem 1.25rem;
+  }
+
+  @media (min-width: 640px) {
+    .newsletter {
+      padding: 2.5rem;
+    }
   }
 </style>
+
+<script>
+  // ---- Carousels: centre-card highlight + arrow buttons ----
+  for (const carousel of document.querySelectorAll<HTMLElement>("[data-carousel]")) {
+    const track = carousel.querySelector<HTMLElement>("[data-carousel-track]");
+    const prev = carousel.querySelector<HTMLButtonElement>("[data-carousel-prev]");
+    const next = carousel.querySelector<HTMLButtonElement>("[data-carousel-next]");
+    if (!track) continue;
+    const items = Array.from(track.querySelectorAll<HTMLElement>("[data-carousel-item]"));
+    let current = 0;
+
+    const markCenter = () => {
+      const middle = track.scrollLeft + track.clientWidth / 2;
+      let best = 0;
+      let bestDistance = Infinity;
+      items.forEach((item, index) => {
+        const distance = Math.abs(item.offsetLeft + item.offsetWidth / 2 - middle);
+        if (distance < bestDistance) {
+          bestDistance = distance;
+          best = index;
+        }
+      });
+      current = best;
+      items.forEach((item, index) => item.classList.toggle("is-center", index === best));
+      if (prev) prev.disabled = best === 0;
+      if (next) next.disabled = best === items.length - 1;
+    };
+
+    const goTo = (index: number, smooth = true) => {
+      const item = items[Math.max(0, Math.min(items.length - 1, index))];
+      if (!item) return;
+      track.scrollTo({
+        left: item.offsetLeft + item.offsetWidth / 2 - track.clientWidth / 2,
+        behavior: smooth ? "smooth" : "instant",
+      });
+    };
+
+    let frame = 0;
+    track.addEventListener(
+      "scroll",
+      () => {
+        cancelAnimationFrame(frame);
+        frame = requestAnimationFrame(markCenter);
+      },
+      { passive: true },
+    );
+    prev?.addEventListener("click", () => goTo(current - 1));
+    next?.addEventListener("click", () => goTo(current + 1));
+    window.addEventListener("resize", () => goTo(current, false));
+
+    // Start on the second card when there are three or more, like the mockup.
+    const start = () => {
+      goTo(items.length >= 3 ? 1 : 0, false);
+      markCenter();
+    };
+    start();
+    carousel.addEventListener("carousel:show", start);
+  }
+
+  // ---- Category tabs ----
+  const tabs = Array.from(document.querySelectorAll<HTMLButtonElement>("[data-portfolio-tab]"));
+
+  const selectTab = (tab: HTMLButtonElement) => {
+    for (const other of tabs) {
+      const selected = other === tab;
+      other.setAttribute("aria-selected", String(selected));
+      other.tabIndex = selected ? 0 : -1;
+      const panel = document.getElementById(other.getAttribute("aria-controls") ?? "");
+      if (panel) panel.hidden = !selected;
+      if (selected) panel?.dispatchEvent(new Event("carousel:show"));
+    }
+  };
+
+  tabs.forEach((tab, index) => {
+    tab.addEventListener("click", () => selectTab(tab));
+    tab.addEventListener("keydown", (event) => {
+      if (event.key !== "ArrowRight" && event.key !== "ArrowLeft") return;
+      const nextTab = tabs[(index + (event.key === "ArrowRight" ? 1 : -1) + tabs.length) % tabs.length];
+      selectTab(nextTab);
+      nextTab.focus();
+    });
+  });
+</script>

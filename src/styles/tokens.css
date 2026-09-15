@@ -13,6 +13,9 @@
   --font-serif: "Source Serif 4", ui-serif, Georgia, "Times New Roman", serif;
   --font-serif-bn: "Noto Serif Bengali", "Source Serif 4", serif;
   --font-display-bn: "Hind Siliguri", "Inter", sans-serif;
+  /* Condensed display face for the logo, hero name and section titles.
+     Bebas Neue has no Bengali glyphs, so Bangla falls through to Hind Siliguri. */
+  --font-display: "Bebas Neue", "Hind Siliguri", "Arial Narrow", "Inter", sans-serif;
 
   /* ---- Type scale: 1.25 (major third) ratio off a 1rem base ---- */
   --text-xs: 0.64rem;
@@ -34,18 +37,18 @@
   --text-5xl: 3.815rem;
   --text-5xl--line-height: 4.1rem;
 
-  /* ---- Colour: "Minimal Green" palette ----
-     #051F20  #0B2B26  #163832  #235347  #8EB69B  #DAF1DE
-     Light: deep-green ink on a pale mint ground. */
-  --color-bg: #f3faf4;
-  --color-bg-raised: #daf1de;
-  --color-text: #051f20;
-  --color-text-muted: #235347;
-  --color-border: #b8d6c0;
-  --color-accent: #235347;
-  --color-accent-ink: #daf1de;
+  /* ---- Colour: deep teal with a cyan accent ----
+     Light: dark-teal ink on a pale aqua ground. */
+  --color-bg: #eef7f9;
+  --color-bg-raised: #dcedf1;
+  --color-panel: #e4f2f5;
+  --color-text: #07232b;
+  --color-text-muted: #3f6670;
+  --color-border: #bcd9e0;
+  --color-accent: #0a7288;
+  --color-accent-ink: #ffffff;
   /* Soft accent wash for glows and hover halos */
-  --color-accent-soft: rgba(35, 83, 71, 0.18);
+  --color-accent-soft: rgba(10, 114, 136, 0.2);
 
   /* Assembly of Ideas gets its own accent within the same system */
   --color-assembly-accent: #8a5a12;
@@ -61,6 +64,7 @@
   --radius-sm: 0.25rem;
   --radius-md: 0.5rem;
   --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
 }
 
 /* True dark mode: designed, not inverted. "System" (no data-theme) follows
@@ -68,28 +72,30 @@
    picks Light or Dark explicitly via ThemeToggle (persisted to localStorage). */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --color-bg: #051f20;
-    --color-bg-raised: #0b2b26;
-    --color-text: #daf1de;
-    --color-text-muted: #8eb69b;
-    --color-border: #163832;
-    --color-accent: #8eb69b;
-    --color-accent-ink: #051f20;
-    --color-accent-soft: rgba(142, 182, 155, 0.22);
+    --color-bg: #061a20;
+    --color-bg-raised: #0b2830;
+    --color-panel: #0c2d36;
+    --color-text: #e6f6f9;
+    --color-text-muted: #9fc4cc;
+    --color-border: #17414b;
+    --color-accent: #1ab3d3;
+    --color-accent-ink: #03161b;
+    --color-accent-soft: rgba(26, 179, 211, 0.24);
     --color-assembly-accent: #e8b25c;
     --color-assembly-accent-ink: #2a1a04;
   }
 }
 
 :root[data-theme="dark"] {
-  --color-bg: #051f20;
-  --color-bg-raised: #0b2b26;
-  --color-text: #daf1de;
-  --color-text-muted: #8eb69b;
-  --color-border: #163832;
-  --color-accent: #8eb69b;
-  --color-accent-ink: #051f20;
-  --color-accent-soft: rgba(142, 182, 155, 0.22);
+  --color-bg: #061a20;
+  --color-bg-raised: #0b2830;
+  --color-panel: #0c2d36;
+  --color-text: #e6f6f9;
+  --color-text-muted: #9fc4cc;
+  --color-border: #17414b;
+  --color-accent: #1ab3d3;
+  --color-accent-ink: #03161b;
+  --color-accent-soft: rgba(26, 179, 211, 0.24);
   --color-assembly-accent: #e8b25c;
   --color-assembly-accent-ink: #2a1a04;
 }

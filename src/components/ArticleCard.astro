@@ -24,10 +24,7 @@ const Heading = headingLevel;
   data-tags={entry.data.tags.join(",")}
   data-series={series?.id ?? ""}
 >
-  <span class="card-arrow" aria-hidden="true">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round"><path d="M7 17 17 7M9 7h8v8"></path></svg>
-  </span>
-  <div class="mb-3 flex flex-wrap items-center gap-2 pr-10">
+  <div class="mb-3 flex flex-wrap items-center gap-2">
     <LanguageChip lang={lang} />
     {series && <span class="font-sans text-xs text-text-muted">{series.data.title}</span>}
   </div>
