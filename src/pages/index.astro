@@ -148,16 +148,6 @@ const tabs = [
         <a href="/about" class="btn btn-primary about-more">Read more</a>
       </div>
 
-      <div class="photo about-photo">
-        {
-          hasPortrait ? (
-            <img src={PORTRAIT} alt="" width="960" height="1200" loading="lazy" />
-          ) : (
-            <span class="photo-fallback" aria-hidden="true">AF</span>
-          )
-        }
-      </div>
-
       <div class="about-follow">
         <span class="follow-label">Follow me</span>
         <a href={SITE.social.github} target="_blank" rel="noopener noreferrer" class="social" aria-label="GitHub">
@@ -495,7 +485,7 @@ const tabs = [
   }
 
   .about-bio {
-    max-width: 38rem;
+    max-width: 46rem;
     margin-top: 1rem;
     font-family: var(--font-sans);
     font-size: 0.9375rem;
@@ -509,16 +499,12 @@ const tabs = [
     font-size: 0.75rem;
   }
 
-  .about-photo {
-    height: 20rem;
-    margin-top: -1rem;
-  }
-
   .about-follow {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     gap: 0.625rem;
+    margin-top: 1.25rem;
     padding-top: 1rem;
     border-top: 3px solid var(--color-accent);
   }
@@ -561,40 +547,14 @@ const tabs = [
 
   @media (min-width: 900px) {
     .about {
-      grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
-      grid-template-rows: 1fr auto;
-      padding: 2.5rem 0 1.75rem 2.5rem;
-      column-gap: 0;
+      padding: 2.5rem;
     }
 
     .about-card {
-      grid-column: 1;
-      grid-row: 1;
-      align-self: center;
-      margin-right: -6rem;
-      padding: 2.25rem 8rem 2.25rem 2.25rem;
-    }
-
-    .about-photo {
-      grid-column: 2;
-      grid-row: 1 / span 2;
-      align-self: stretch;
-      height: auto;
-      min-height: 28rem;
-      margin: -2.5rem 0 -1.75rem;
-      -webkit-mask-image:
-        linear-gradient(to left, #000 60%, transparent 100%),
-        linear-gradient(to bottom, #000 75%, transparent 100%);
-      -webkit-mask-composite: source-in;
-      mask-image:
-        linear-gradient(to left, #000 60%, transparent 100%),
-        linear-gradient(to bottom, #000 75%, transparent 100%);
-      mask-composite: intersect;
+      padding: 2.5rem 3rem;
     }
 
     .about-follow {
-      grid-column: 1;
-      grid-row: 2;
       margin-top: 1.75rem;
     }
   }
