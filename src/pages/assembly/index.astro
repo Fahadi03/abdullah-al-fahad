@@ -5,6 +5,7 @@ import PieceCard from "../../components/assembly/PieceCard.astro";
 import Timeline from "../../components/assembly/Timeline.astro";
 import Gallery from "../../components/assembly/Gallery.astro";
 import NewsletterForm from "../../components/NewsletterForm.astro";
+import { features } from "../../lib/features";
 
 function isPublished(entry: CollectionEntry<"assembly">): boolean {
   return import.meta.env.DEV || !entry.data.draft;
@@ -83,12 +84,18 @@ const photos = await getCollection("assemblyGallery");
       </div>
     </section>
 
-    <section class="mt-20 border-t border-border pt-14">
-      <h2 class="section-title" lang="bn">অনুসরণ <span class="section-title-en">— Follow</span></h2>
-      <div class="mt-8">
-        <NewsletterForm variant="assembly" />
-      </div>
-    </section>
+    {
+      features.newsletter && (
+        <section class="mt-20 border-t border-border pt-14">
+          <h2 class="section-title" lang="bn">
+            অনুসরণ <span class="section-title-en">— Follow</span>
+          </h2>
+          <div class="mt-8">
+            <NewsletterForm variant="assembly" />
+          </div>
+        </section>
+      )
+    }
   </main>
 </AssemblyLayout>
 

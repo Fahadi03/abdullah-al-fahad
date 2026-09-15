@@ -21,6 +21,7 @@
 import matter from "gray-matter";
 import { readFile, mkdir, readdir } from "node:fs/promises";
 import path from "node:path";
+import { resolveSiteUrl } from "./site-url.mjs";
 
 async function launchBrowser() {
   if (process.env.VERCEL) {
@@ -38,7 +39,7 @@ async function launchBrowser() {
   return chromium.launch();
 }
 
-const SITE_URL = (process.env.SITE_URL || "http://localhost:4321").replace(/\/$/, "");
+const SITE_URL = resolveSiteUrl();
 const SITE_NAME = "Abdullah Al Fahad";
 
 const COLORS = {

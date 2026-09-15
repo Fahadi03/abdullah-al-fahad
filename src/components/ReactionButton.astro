@@ -1,5 +1,6 @@
 ---
 import type { Locale } from "../config/site";
+import { features } from "../lib/features";
 
 interface Props {
   slug: string;
@@ -7,21 +8,28 @@ interface Props {
   lang?: Locale;
 }
 
+// Counts live in Upstash Redis — without it the button can't record anything, so hide it.
 const { slug, namespace, lang = "en" } = Astro.props;
 ---
 
-<button
-  type="button"
-  class="reaction-button"
-  data-reaction-button
-  data-slug={slug}
-  data-namespace={namespace ?? ""}
-  aria-label={lang === "bn" ? "হাততালি দিন" : "Applaud this"}
-  aria-pressed="false"
->
-  <span class="reaction-emoji" aria-hidden="true">👏</span>
-  <span class="reaction-count" data-reaction-count hidden></span>
-</button>
+{
+  features.redis && (
+    <button
+      type="button"
+      class="reaction-button"
+      data-reaction-button
+      data-slug={slug}
+      data-namespace={namespace ?? ""}
+      aria-label={lang === "bn" ? "হাততালি দিন" : "Applaud this"}
+      aria-pressed="false"
+    >
+      <span class="reaction-emoji" aria-hidden="true">
+        👏
+      </span>
+      <span class="reaction-count" data-reaction-count hidden />
+    </button>
+  )
+}
 
 <style>
   .reaction-button {

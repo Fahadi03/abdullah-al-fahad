@@ -1,11 +1,14 @@
 ---
 import type { Locale } from "../config/site";
+import { features } from "../lib/features";
 
 interface Props {
   variant?: "assembly";
   lang?: Locale;
 }
 
+// Renders nothing until Buttondown is configured — callers that wrap it in a
+// section should check `features.newsletter` too, so no empty box is left behind.
 const { variant, lang = "en" } = Astro.props;
 const username = import.meta.env.PUBLIC_BUTTONDOWN_USERNAME;
 
@@ -18,7 +21,6 @@ const copy =
         placeholder: "you@example.com",
         button: "সাবস্ক্রাইব",
         unsubscribe: "যেকোনো সময় এক ক্লিকে আনসাবস্ক্রাইব করা যাবে।",
-        empty: "নিউজলেটার এখনো চালু হয়নি।",
         lang: "bn" as const,
       }
     : lang === "bn"
@@ -28,7 +30,6 @@ const copy =
           placeholder: "you@example.com",
           button: "সাবস্ক্রাইব",
           unsubscribe: "যেকোনো সময় এক ক্লিকে আনসাবস্ক্রাইব করা যাবে।",
-          empty: "নিউজলেটার এখনো চালু হয়নি।",
           lang: "bn" as const,
         }
       : {
@@ -37,36 +38,38 @@ const copy =
           placeholder: "you@example.com",
           button: "Subscribe",
           unsubscribe: "Unsubscribe anytime, one click.",
-          empty: "Newsletter signup isn't set up yet.",
           lang: "en" as const,
         };
 ---
 
-<div class="newsletter" lang={copy.lang}>
-  {
-    username ? (
-      <>
-        <h2 class="newsletter-heading">{copy.heading}</h2>
-        <p class="newsletter-promise">{copy.promise}</p>
-        <form
-          action={`https://buttondown.com/api/emails/embed-subscribe/${username}`}
-          method="post"
-          target="popupwindow"
-          class="newsletter-form"
-          onsubmit={`window.open('https://buttondown.com/${username}', 'popupwindow')`}
-        >
-          <input type="email" name="email" placeholder={copy.placeholder} required class="newsletter-input" />
-          <button type="submit" class="newsletter-button">
-            {copy.button}
-          </button>
-        </form>
-        <p class="newsletter-unsubscribe">{copy.unsubscribe}</p>
-      </>
-    ) : (
-      <p class="newsletter-empty">{copy.empty}</p>
-    )
-  }
-</div>
+{
+  features.newsletter && (
+    <div class="newsletter" lang={copy.lang}>
+      <h2 class="newsletter-heading">{copy.heading}</h2>
+      <p class="newsletter-promise">{copy.promise}</p>
+      <form
+        action={`https://buttondown.com/api/emails/embed-subscribe/${username}`}
+        method="post"
+        target="popupwindow"
+        class="newsletter-form"
+        onsubmit={`window.open('https://buttondown.com/${username}', 'popupwindow')`}
+      >
+        <input
+          type="email"
+          name="email"
+          placeholder={copy.placeholder}
+          aria-label={copy.placeholder}
+          required
+          class="newsletter-input"
+        />
+        <button type="submit" class="newsletter-button">
+          {copy.button}
+        </button>
+      </form>
+      <p class="newsletter-unsubscribe">{copy.unsubscribe}</p>
+    </div>
+  )
+}
 
 <style>
   .newsletter {
@@ -124,12 +127,6 @@ const copy =
     margin-top: 0.75rem;
     font-family: var(--font-sans);
     font-size: var(--text-xs);
-    color: var(--color-text-muted);
-  }
-
-  .newsletter-empty {
-    font-family: var(--font-sans);
-    font-size: var(--text-sm);
     color: var(--color-text-muted);
   }
 </style>

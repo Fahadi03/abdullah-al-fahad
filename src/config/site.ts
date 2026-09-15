@@ -1,4 +1,6 @@
-const rawSiteUrl = import.meta.env.SITE_URL || "http://localhost:4321";
+// Resolved once in astro.config.mjs (SITE_URL, else Vercel's production domain,
+// else localhost — see scripts/site-url.mjs) and exposed by Astro as import.meta.env.SITE.
+const rawSiteUrl = import.meta.env.SITE || "http://localhost:4321";
 
 export const SITE = {
   /** Canonical origin, no trailing slash. Every absolute URL is built from this. */
