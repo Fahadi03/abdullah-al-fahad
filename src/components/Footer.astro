@@ -1,0 +1,599 @@
+---
+import fs from "node:fs";
+import SocialIcon from "./SocialIcon.astro";
+import { SITE } from "../config/site";
+
+const hasPortrait = fs.existsSync(`public${SITE.portrait}`);
+const year = new Date().getFullYear();
+
+const links = [
+  { href: "/writings", label: "Writings" },
+  { href: "/videos", label: "Videos" },
+  { href: SITE.assemblyBase, label: "Assembly" },
+  { href: "/projects", label: "Projects" },
+  { href: "/about", label: "About" },
+  { href: "/now", label: "Now" },
+  { href: "/contact", label: "Contact" },
+  { href: "/guestbook", label: "Guestbook" },
+];
+---
+
+<!--
+  A dark, cinematic "screen" in every theme: near-black surface, thin column
+  rules, a glitching monochrome portrait, an orbiting ring and an oversized
+  serif word cropped by the bottom edge.
+-->
+<footer class="site-footer" data-pagefind-ignore="all">
+  <div class="footer-screen">
+    <div class="footer-top">
+      <a href="/" class="footer-brand">{SITE.name}</a>
+
+      <nav class="footer-nav" aria-label="Footer">
+        <ul>
+          {
+            links.map((link) => (
+              <li>
+                <a href={link.href}>{link.label}</a>
+              </li>
+            ))
+          }
+        </ul>
+      </nav>
+
+      <a href="#" class="footer-up" aria-label="Back to top" title="Back to top">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <circle cx="5" cy="5" r="1.7"></circle>
+          <circle cx="12" cy="5" r="1.7"></circle>
+          <circle cx="19" cy="5" r="1.7"></circle>
+          <circle cx="5" cy="12" r="1.7"></circle>
+          <circle cx="12" cy="12" r="1.7"></circle>
+          <circle cx="19" cy="12" r="1.7"></circle>
+          <circle cx="5" cy="19" r="1.7"></circle>
+          <circle cx="12" cy="19" r="1.7"></circle>
+          <circle cx="19" cy="19" r="1.7"></circle>
+        </svg>
+      </a>
+    </div>
+
+    <div class="footer-body">
+      <div class="footer-rail" aria-hidden="true">
+        <span></span>
+        <span class="is-on"></span>
+        <span></span>
+      </div>
+
+      <div class="footer-copy">
+        <p class="footer-kicker">Keep in touch</p>
+        <p class="footer-headline">Thanks for reading. <em>Let's talk ideas.</em></p>
+        <p class="footer-text">{SITE.tagline}.</p>
+
+        <div class="footer-actions">
+          <a href="/contact" class="footer-cta">Contact me <span aria-hidden="true">→</span></a>
+          <a href="/guestbook" class="footer-link">Sign the guestbook</a>
+        </div>
+
+        <ul class="footer-social">
+          <li>
+            <a href={SITE.social.github} target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+              <SocialIcon name="github" />
+            </a>
+          </li>
+          <li>
+            <a href={SITE.social.linkedin} target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+              <SocialIcon name="linkedin" />
+            </a>
+          </li>
+          <li>
+            <a href="/rss.xml" aria-label="RSS feed">
+              <SocialIcon name="rss" />
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="footer-visual" aria-hidden="true">
+        <span class="footer-ring"></span>
+        {
+          hasPortrait && (
+            <div class="footer-photo" style={`--portrait: url(${SITE.portrait})`}>
+              <span class="footer-slice slice-a" />
+              <span class="footer-slice slice-b" />
+            </div>
+          )
+        }
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <div class="footer-meta">
+        <span>© {year} {SITE.name}</span>
+        <a href="/rss.xml">RSS</a>
+      </div>
+      <p class="footer-giant" aria-hidden="true">Fahad</p>
+    </div>
+  </div>
+</footer>
+
+<style>
+  /* Fixed palette: the footer is the same dark screen in light and dark themes. */
+  .site-footer {
+    --f-bg: #020709;
+    --f-text: #e6f6f9;
+    --f-muted: #8fb3bb;
+    --f-line: rgba(230, 246, 249, 0.07);
+    --f-accent: #1ab3d3;
+    --f-accent-ink: #03161b;
+
+    max-width: 80rem;
+    margin: 1.5rem auto 0;
+    padding: 0 1rem 1.5rem;
+  }
+
+  @media (min-width: 640px) {
+    .site-footer {
+      padding: 0 2.5rem 2.5rem;
+    }
+  }
+
+  .footer-screen {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    border-radius: var(--radius-xl);
+    background-color: var(--f-bg);
+    /* Thin column rules, four across */
+    background-image: linear-gradient(to right, var(--f-line) 1px, transparent 1px);
+    background-size: 25% 100%;
+    color: var(--f-text);
+    box-shadow:
+      0 0 0 1px rgba(230, 246, 249, 0.08),
+      0 0 110px -24px rgba(26, 120, 255, 0.6),
+      0 0 50px -16px rgba(26, 179, 211, 0.45);
+  }
+
+  .footer-screen a {
+    transition:
+      color var(--duration-base) var(--ease-editorial),
+      background-color var(--duration-base) var(--ease-editorial),
+      border-color var(--duration-base) var(--ease-editorial),
+      transform var(--duration-slow) var(--ease-editorial);
+  }
+
+  /* ---------- Top bar ---------- */
+  .footer-top {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem 2.5rem;
+    padding: 1.5rem 1.5rem 0;
+  }
+
+  .footer-brand {
+    font-family: var(--font-serif);
+    font-size: 0.875rem;
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+  }
+
+  .footer-nav {
+    order: 3;
+    width: 100%;
+  }
+
+  .footer-nav ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.5rem;
+  }
+
+  .footer-nav a {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    min-height: 2rem;
+    font-family: var(--font-sans);
+    font-size: 0.625rem;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--f-muted);
+  }
+
+  /* The small dot under a link, like the reference's active marker */
+  .footer-nav a::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: 0.1rem;
+    width: 4px;
+    height: 4px;
+    margin-left: -2px;
+    border-radius: 50%;
+    background-color: var(--f-accent);
+    opacity: 0;
+    transform: scale(0);
+    transition:
+      opacity var(--duration-base) ease,
+      transform var(--duration-slow) var(--ease-editorial);
+  }
+
+  .footer-nav a:hover,
+  .footer-nav a:focus-visible {
+    color: var(--f-text);
+  }
+
+  .footer-nav a:hover::after,
+  .footer-nav a:focus-visible::after {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  .footer-up {
+    display: grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    margin-left: auto;
+    color: var(--f-text);
+  }
+
+  .footer-up svg {
+    width: 1.1rem;
+    height: 1.1rem;
+  }
+
+  .footer-up:hover,
+  .footer-up:focus-visible {
+    color: var(--f-accent);
+    transform: rotate(90deg);
+  }
+
+  @media (min-width: 1024px) {
+    .footer-nav {
+      order: 0;
+      width: auto;
+    }
+  }
+
+  /* ---------- Body ---------- */
+  .footer-body {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .footer-rail {
+    display: none;
+  }
+
+  .footer-copy {
+    position: relative;
+    z-index: 2;
+    padding: 2.5rem 1.5rem 1rem;
+  }
+
+  .footer-kicker {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-family: var(--font-sans);
+    font-size: 0.625rem;
+    font-weight: 600;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--f-accent);
+  }
+
+  .footer-kicker::before {
+    content: "";
+    width: 2rem;
+    height: 1px;
+    background-color: currentColor;
+  }
+
+  .footer-headline {
+    max-width: 30rem;
+    margin-top: 1rem;
+    font-family: var(--font-serif);
+    font-size: clamp(2rem, 5vw, 3.25rem);
+    line-height: 1.05;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+
+  .footer-headline em {
+    display: block;
+    font-style: italic;
+    font-weight: 400;
+    color: var(--f-accent);
+  }
+
+  .footer-text {
+    max-width: 26rem;
+    margin-top: 1rem;
+    font-family: var(--font-sans);
+    font-size: 0.875rem;
+    line-height: 1.7;
+    color: var(--f-muted);
+  }
+
+  .footer-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 1.5rem;
+    margin-top: 1.75rem;
+  }
+
+  .footer-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.625rem;
+    min-height: 2.75rem;
+    padding-inline: 1.25rem;
+    border: 1px solid rgba(230, 246, 249, 0.3);
+    border-radius: 999px;
+    font-family: var(--font-sans);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+
+  .footer-cta:hover,
+  .footer-cta:focus-visible {
+    border-color: var(--f-accent);
+    background-color: var(--f-accent);
+    color: var(--f-accent-ink);
+  }
+
+  .footer-link {
+    font-family: var(--font-sans);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--f-muted);
+    text-decoration: underline;
+    text-decoration-color: rgba(230, 246, 249, 0.25);
+    text-underline-offset: 5px;
+  }
+
+  .footer-link:hover,
+  .footer-link:focus-visible {
+    color: var(--f-text);
+    text-decoration-color: var(--f-accent);
+  }
+
+  .footer-social {
+    display: flex;
+    gap: 0.625rem;
+    margin-top: 1.75rem;
+  }
+
+  .footer-social a {
+    display: grid;
+    place-items: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border: 1px solid rgba(230, 246, 249, 0.18);
+    border-radius: 50%;
+    color: var(--f-text);
+  }
+
+  .footer-social a:hover,
+  .footer-social a:focus-visible {
+    border-color: var(--f-accent);
+    color: var(--f-accent);
+    transform: translateY(-2px);
+  }
+
+  /* ---------- Portrait visual ---------- */
+  .footer-visual {
+    position: relative;
+    min-height: 19rem;
+  }
+
+  .footer-photo {
+    position: absolute;
+    inset: 0;
+    background: var(--portrait) 50% 18% / cover no-repeat;
+    filter: grayscale(1) contrast(1.2) brightness(0.62);
+    -webkit-mask-image:
+      linear-gradient(to bottom, transparent 0%, #000 22%, #000 70%, transparent 100%),
+      linear-gradient(to right, transparent 0%, #000 30%);
+    -webkit-mask-composite: source-in;
+    mask-image:
+      linear-gradient(to bottom, transparent 0%, #000 22%, #000 70%, transparent 100%),
+      linear-gradient(to right, transparent 0%, #000 30%);
+    mask-composite: intersect;
+  }
+
+  /* Scanlines */
+  .footer-photo::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    background: repeating-linear-gradient(to bottom, rgba(0, 0, 0, 0.35) 0 1px, transparent 1px 3px);
+  }
+
+  /* Cool blue cast over the monochrome image */
+  .footer-photo::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    background: linear-gradient(200deg, rgba(26, 140, 255, 0.35), rgba(26, 179, 211, 0.12) 60%, transparent);
+    mix-blend-mode: screen;
+  }
+
+  /* Two horizontal strips of the same image that jump sideways now and then */
+  .footer-slice {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background: inherit;
+  }
+
+  .slice-a {
+    clip-path: inset(24% 0 68% 0);
+    animation: footer-glitch-a 7s steps(1) infinite;
+  }
+
+  .slice-b {
+    clip-path: inset(56% 0 36% 0);
+    animation: footer-glitch-b 7s steps(1) infinite 0.35s;
+  }
+
+  @keyframes footer-glitch-a {
+    0%,
+    84%,
+    100% {
+      transform: translateX(0);
+    }
+    86% {
+      transform: translateX(-18px);
+    }
+    89% {
+      transform: translateX(12px);
+    }
+    92% {
+      transform: translateX(-5px);
+    }
+  }
+
+  @keyframes footer-glitch-b {
+    0%,
+    85%,
+    100% {
+      transform: translateX(0);
+    }
+    87% {
+      transform: translateX(16px);
+    }
+    90% {
+      transform: translateX(-9px);
+    }
+  }
+
+  .footer-ring {
+    position: absolute;
+    top: -3rem;
+    right: -8rem;
+    z-index: 4;
+    width: 20rem;
+    aspect-ratio: 1;
+    border: 1.5px solid rgba(230, 246, 249, 0.5);
+    border-radius: 50%;
+    animation: footer-orbit 28s linear infinite;
+  }
+
+  /* The dot that travels around the ring */
+  .footer-ring::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: -4px;
+    width: 8px;
+    height: 8px;
+    margin-top: -4px;
+    border-radius: 50%;
+    background-color: var(--f-accent);
+    box-shadow: 0 0 12px 2px var(--f-accent);
+  }
+
+  @keyframes footer-orbit {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  @media (min-width: 900px) {
+    .footer-body {
+      grid-template-columns: 4rem minmax(0, 1fr) minmax(0, 1.1fr);
+      min-height: 27rem;
+    }
+
+    .footer-rail {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 0.625rem;
+    }
+
+    .footer-rail span {
+      width: 2px;
+      height: 0.625rem;
+      border-radius: 2px;
+      background-color: rgba(230, 246, 249, 0.3);
+    }
+
+    .footer-rail .is-on {
+      height: 1.5rem;
+      background-color: var(--f-accent);
+      box-shadow: 0 0 8px var(--f-accent);
+    }
+
+    .footer-copy {
+      align-self: center;
+      padding: 3rem 1rem 3rem 0;
+    }
+
+    .footer-visual {
+      min-height: 0;
+    }
+
+    .footer-ring {
+      top: -6rem;
+      right: -10rem;
+      width: 28rem;
+    }
+  }
+
+  /* ---------- Bottom: meta row + cropped giant word ---------- */
+  .footer-bottom {
+    position: relative;
+    z-index: 2;
+    padding: 0 1.5rem;
+  }
+
+  .footer-meta {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.5rem 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(230, 246, 249, 0.1);
+    font-family: var(--font-sans);
+    font-size: 0.625rem;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--f-muted);
+  }
+
+  .footer-meta a:hover,
+  .footer-meta a:focus-visible {
+    color: var(--f-accent);
+  }
+
+  .footer-giant {
+    margin: 0.5rem 0 -0.2em;
+    font-family: var(--font-serif);
+    font-size: clamp(6rem, 25vw, 20rem);
+    font-weight: 600;
+    line-height: 0.85;
+    letter-spacing: -0.03em;
+    background: linear-gradient(to bottom, rgba(230, 246, 249, 0.2), rgba(230, 246, 249, 0.02) 85%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    user-select: none;
+    pointer-events: none;
+  }
+</style>
