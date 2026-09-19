@@ -2,6 +2,7 @@
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import Header from "../../components/Header.astro";
 import LanguageChip from "../../components/LanguageChip.astro";
+import PageHeader from "../../components/PageHeader.astro";
 import { getAllSeries, getSeriesEpisodes } from "../../lib/writings";
 import { formatDate, formatMinutes, formatNumber } from "../../lib/numerals";
 import { estimateReadingMinutes } from "../../lib/reading-time";
@@ -22,14 +23,18 @@ const lang = series.data.lang;
 
 <BaseLayout title={series.data.title} description={series.data.description} lang={lang}>
   <Header />
-  <main class="mx-auto max-w-3xl px-6 py-12 sm:px-10 sm:py-16">
-    <LanguageChip lang={lang} />
-    <h1 class="mt-4 font-serif text-4xl leading-tight text-balance sm:text-5xl" lang={lang}>
-      {series.data.title}
-    </h1>
-    <p class="mt-4 max-w-prose font-serif text-lg text-text-muted" lang={lang}>
-      {series.data.description}
-    </p>
+  <main class="page">
+    <PageHeader
+      eyebrow={`Series · ${episodes.length} ${episodes.length === 1 ? "episode" : "episodes"}`}
+      title={series.data.title}
+      lede={series.data.description}
+      lang={lang}
+      size="md"
+    >
+      <LanguageChip lang={lang} slot="top" class="series-chip" />
+    </PageHeader>
+
+    <div class="page-body-narrow">
 
     <div class="series-progress" data-series-progress data-lang={lang}>
       <div class="series-progress-track">
@@ -63,12 +68,17 @@ const lang = series.data.lang;
         ))
       }
     </ol>
+    </div>
   </main>
 </BaseLayout>
 
 <style>
   .series-progress {
-    margin-top: 2.5rem;
+    margin-top: 0;
+  }
+
+  :global(.series-chip) {
+    margin-top: 0.75rem;
   }
 
   .series-progress-track {
@@ -128,8 +138,9 @@ const lang = series.data.lang;
   }
 
   .episode-title {
-    font-family: var(--font-serif);
-    font-size: var(--text-lg);
+    font-family: var(--font-sans);
+    font-size: 1.125rem;
+    font-weight: 600;
   }
 
   .episode-meta {

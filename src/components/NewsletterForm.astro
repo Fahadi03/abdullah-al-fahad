@@ -78,8 +78,18 @@ const copy =
   }
 
   .newsletter-heading {
-    font-family: var(--font-serif);
-    font-size: var(--text-xl);
+    font-family: var(--font-display);
+    font-size: 2.25rem;
+    font-weight: 400;
+    line-height: 1;
+    color: var(--color-accent);
+  }
+
+  .newsletter-heading:lang(bn) {
+    font-family: var(--font-display-bn);
+    font-size: 1.5rem;
+    font-weight: 600;
+    line-height: 1.4;
   }
 
   .newsletter-promise {
@@ -120,7 +130,7 @@ const copy =
     color: var(--color-accent-ink);
     font-family: var(--font-sans);
     font-size: var(--text-sm);
-    font-weight: 500;
+    font-weight: 600;
   }
 
   .newsletter-unsubscribe {

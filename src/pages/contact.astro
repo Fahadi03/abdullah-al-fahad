@@ -4,6 +4,7 @@ export const prerender = false;
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Header from "../components/Header.astro";
 import SocialIcon from "../components/SocialIcon.astro";
+import PageHeader from "../components/PageHeader.astro";
 import { SITE } from "../config/site";
 import { features } from "../lib/features";
 
@@ -13,11 +14,14 @@ const sent = Astro.url.searchParams.get("sent");
 <BaseLayout title="Contact" description="Get in touch.">
   <Header />
 
-  <main class="mx-auto max-w-2xl px-6 py-12 sm:px-10 sm:py-16">
-    <h1 class="font-serif text-4xl leading-tight text-balance">Contact</h1>
-    <p class="mt-3 max-w-prose font-serif text-lg text-text-muted">
-      For anything that doesn't fit a comment — questions, corrections, work inquiries.
-    </p>
+  <main class="page">
+    <PageHeader
+      eyebrow="Get in touch"
+      title="Contact"
+      lede="For anything that doesn't fit a comment — questions, corrections, work inquiries."
+    />
+
+    <div class="page-body-narrow">
 
     {
       sent === "1" && (
@@ -36,7 +40,7 @@ const sent = Astro.url.searchParams.get("sent");
 
     {
       features.contactForm ? (
-        <form method="POST" action="/api/contact" class="contact-form" data-contact-form novalidate>
+        <form method="POST" action="/api/contact" class="panel contact-form" data-contact-form novalidate>
           <div class="field">
             <label for="name">Name</label>
             <input type="text" id="name" name="name" autocomplete="name" required />
@@ -66,8 +70,8 @@ const sent = Astro.url.searchParams.get("sent");
 
           <p class="form-error" data-form-error hidden />
 
-          <button type="submit" class="submit-button" data-submit-button>
-            Send
+          <button type="submit" class="btn btn-primary submit-button" data-submit-button>
+            Send message
           </button>
         </form>
       ) : (
@@ -97,12 +101,13 @@ const sent = Astro.url.searchParams.get("sent");
         </div>
       )
     }
+    </div>
   </main>
 </BaseLayout>
 
 <style>
   .banner {
-    margin-top: 2rem;
+    margin-bottom: 1.5rem;
     padding: 1rem 1.25rem;
     border-radius: var(--radius-md);
     font-family: var(--font-sans);
@@ -122,10 +127,16 @@ const sent = Astro.url.searchParams.get("sent");
   }
 
   .contact-form {
-    margin-top: 2.5rem;
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
+    padding: 1.75rem 1.5rem;
+  }
+
+  @media (min-width: 640px) {
+    .contact-form {
+      padding: 2.25rem 2.5rem;
+    }
   }
 
   .field {
@@ -185,23 +196,10 @@ const sent = Astro.url.searchParams.get("sent");
 
   .submit-button {
     align-self: flex-start;
-    height: 2.75rem;
-    padding-inline: 1.5rem;
-    border-radius: var(--radius-md);
-    background-color: var(--color-accent);
-    color: var(--color-accent-ink);
-    font-family: var(--font-sans);
-    font-size: var(--text-sm);
-    font-weight: 500;
-    transition: opacity var(--duration-fast) var(--ease-editorial);
   }
 
   .submit-button:disabled {
     opacity: 0.6;
-  }
-
-  .contact-alt {
-    margin-top: 2.5rem;
   }
 
   .contact-alt-lead {

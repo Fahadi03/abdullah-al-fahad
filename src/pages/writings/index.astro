@@ -2,6 +2,7 @@
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import Header from "../../components/Header.astro";
 import ArticleCard from "../../components/ArticleCard.astro";
+import PageHeader from "../../components/PageHeader.astro";
 import { getPublishedWritings, getAllSeries, resolveSeries } from "../../lib/writings";
 import { estimateReadingMinutes } from "../../lib/reading-time";
 
@@ -25,12 +26,14 @@ const allTags = Array.from(new Set(writings.flatMap((entry) => entry.data.tags))
 >
   <Header />
 
-  <main class="mx-auto max-w-5xl px-6 py-12 sm:px-10 sm:py-16">
-    <h1 class="font-serif text-4xl leading-tight text-balance">Writings</h1>
-    <p class="mt-3 max-w-prose font-serif text-lg text-text-muted">
-      Bangla and English, mixed on purpose. Filter by language, tag, or series.
-    </p>
+  <main class="page">
+    <PageHeader
+      eyebrow={`${writings.length} ${writings.length === 1 ? "article" : "articles"} · Bangla & English`}
+      title="Writings"
+      lede="Bangla and English, mixed on purpose. Filter by language, tag, or series."
+    />
 
+    <div class="page-body">
     <div class="filter-bar" data-filter-bar>
       <div class="search-field">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="search-icon" aria-hidden="true">
@@ -107,12 +110,12 @@ const allTags = Array.from(new Set(writings.flatMap((entry) => entry.data.tags))
     </div>
 
     <p class="empty-state" data-empty-state hidden>No writings match these filters yet.</p>
+    </div>
   </main>
 </BaseLayout>
 
 <style>
   .filter-bar {
-    margin-top: 2.5rem;
     padding-bottom: 2rem;
     border-bottom: 1px solid var(--color-border);
     display: flex;

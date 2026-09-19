@@ -24,8 +24,9 @@ const links = [
 
 <!--
   A dark, cinematic "screen" in every theme: near-black surface, thin column
-  rules, a blue glow with orbiting rings and an oversized serif word cropped
-  by the bottom edge. The portrait appears only in the home hero.
+  rules, a cyan glow with orbiting rings and an oversized display word cropped
+  by the bottom edge. Same fonts as the rest of the site (Bebas + Inter).
+  The portrait appears only in the home hero.
 -->
 <footer class="site-footer" data-pagefind-ignore="all">
   <div class="footer-screen">
@@ -115,9 +116,9 @@ const links = [
 <style>
   /* Fixed palette: the footer is the same dark screen in light and dark themes. */
   .site-footer {
-    --f-bg: #020709;
+    --f-bg: #03151a;
     --f-text: #e6f6f9;
-    --f-muted: #8fb3bb;
+    --f-muted: #9fc4cc;
     --f-line: rgba(230, 246, 249, 0.07);
     --f-accent: #1ab3d3;
     --f-accent-ink: #03161b;
@@ -145,8 +146,8 @@ const links = [
     color: var(--f-text);
     box-shadow:
       0 0 0 1px rgba(230, 246, 249, 0.08),
-      0 0 110px -24px rgba(26, 120, 255, 0.6),
-      0 0 50px -16px rgba(26, 179, 211, 0.45);
+      0 0 110px -24px rgba(26, 179, 211, 0.5),
+      0 0 50px -16px rgba(26, 179, 211, 0.4);
   }
 
   .footer-screen a {
@@ -169,11 +170,11 @@ const links = [
   }
 
   .footer-brand {
-    font-family: var(--font-serif);
-    font-size: 0.875rem;
-    font-weight: 600;
-    letter-spacing: 0.22em;
-    text-transform: uppercase;
+    font-family: var(--font-display);
+    font-size: 1.75rem;
+    line-height: 1;
+    letter-spacing: 0.03em;
+    color: var(--f-accent);
   }
 
   .footer-nav {
@@ -193,9 +194,9 @@ const links = [
     align-items: center;
     min-height: 2rem;
     font-family: var(--font-sans);
-    font-size: 0.625rem;
+    font-size: 0.75rem;
     font-weight: 600;
-    letter-spacing: 0.2em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--f-muted);
   }
@@ -278,9 +279,9 @@ const links = [
     align-items: center;
     gap: 0.75rem;
     font-family: var(--font-sans);
-    font-size: 0.625rem;
+    font-size: 0.75rem;
     font-weight: 600;
-    letter-spacing: 0.24em;
+    letter-spacing: 0.16em;
     text-transform: uppercase;
     color: var(--f-accent);
   }
@@ -295,17 +296,16 @@ const links = [
   .footer-headline {
     max-width: 30rem;
     margin-top: 1rem;
-    font-family: var(--font-serif);
-    font-size: clamp(2rem, 5vw, 3.25rem);
-    line-height: 1.05;
-    letter-spacing: -0.01em;
+    font-family: var(--font-display);
+    font-size: clamp(2.75rem, 6vw, 4.25rem);
+    line-height: 0.95;
+    letter-spacing: 0.01em;
     text-wrap: balance;
   }
 
   .footer-headline em {
     display: block;
-    font-style: italic;
-    font-weight: 400;
+    font-style: normal;
     color: var(--f-accent);
   }
 
@@ -335,9 +335,9 @@ const links = [
     border: 1px solid rgba(230, 246, 249, 0.3);
     border-radius: 999px;
     font-family: var(--font-sans);
-    font-size: 0.6875rem;
+    font-size: 0.75rem;
     font-weight: 600;
-    letter-spacing: 0.18em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
   }
 
@@ -350,9 +350,9 @@ const links = [
 
   .footer-link {
     font-family: var(--font-sans);
-    font-size: 0.6875rem;
+    font-size: 0.75rem;
     font-weight: 600;
-    letter-spacing: 0.18em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--f-muted);
     text-decoration: underline;
@@ -402,7 +402,7 @@ const links = [
     width: 24rem;
     aspect-ratio: 1;
     border-radius: 50%;
-    background: radial-gradient(closest-side, rgba(26, 120, 255, 0.32), rgba(26, 179, 211, 0.1) 55%, transparent);
+    background: radial-gradient(closest-side, rgba(26, 179, 211, 0.3), rgba(26, 179, 211, 0.08) 55%, transparent);
     transform: translate(-50%, -50%);
     pointer-events: none;
   }
@@ -509,9 +509,9 @@ const links = [
     padding-top: 1rem;
     border-top: 1px solid rgba(230, 246, 249, 0.1);
     font-family: var(--font-sans);
-    font-size: 0.625rem;
+    font-size: 0.75rem;
     font-weight: 600;
-    letter-spacing: 0.2em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--f-muted);
   }
@@ -522,12 +522,12 @@ const links = [
   }
 
   .footer-giant {
-    margin: 0.5rem 0 -0.2em;
-    font-family: var(--font-serif);
-    font-size: clamp(6rem, 25vw, 20rem);
-    font-weight: 600;
-    line-height: 0.85;
-    letter-spacing: -0.03em;
+    margin: 0.5rem 0 -0.12em;
+    font-family: var(--font-display);
+    font-size: clamp(8rem, 30vw, 24rem);
+    font-weight: 400;
+    line-height: 0.8;
+    letter-spacing: 0.02em;
     background: linear-gradient(to bottom, rgba(230, 246, 249, 0.2), rgba(230, 246, 249, 0.02) 85%);
     -webkit-background-clip: text;
     background-clip: text;

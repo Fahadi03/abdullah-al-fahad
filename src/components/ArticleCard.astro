@@ -28,13 +28,10 @@ const Heading = headingLevel;
     <LanguageChip lang={lang} />
     {series && <span class="font-sans text-xs text-text-muted">{series.data.title}</span>}
   </div>
-  <Heading
-    class="font-serif text-2xl leading-snug text-balance transition-colors duration-fast group-hover:text-accent"
-    lang={lang}
-  >
+  <Heading class="article-title transition-colors duration-fast group-hover:text-accent" lang={lang}>
     {title}
   </Heading>
-  <p class="mt-2 line-clamp-2 font-serif text-text-muted" lang={lang}>{description}</p>
+  <p class="article-desc mt-2 line-clamp-2" lang={lang}>{description}</p>
   <div class="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 font-sans text-xs text-text-muted">
     <time datetime={pubDate.toISOString()}>{formatDate(pubDate, lang)}</time>
     <span aria-hidden="true">·</span>
@@ -44,6 +41,37 @@ const Heading = headingLevel;
     </span>
   </div>
 </a>
+
+<style>
+  .article-title {
+    font-family: var(--font-display);
+    font-size: 2rem;
+    font-weight: 400;
+    line-height: 0.95;
+    letter-spacing: 0.01em;
+    text-wrap: balance;
+  }
+
+  .article-title:lang(bn) {
+    font-family: var(--font-display-bn);
+    font-size: 1.5rem;
+    font-weight: 600;
+    line-height: 1.35;
+    letter-spacing: 0;
+  }
+
+  .article-desc {
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    line-height: 1.6;
+    color: var(--color-text-muted);
+  }
+
+  .article-desc:lang(bn) {
+    font-family: var(--font-sans);
+    line-height: 1.8;
+  }
+</style>
 
 <script>
   import { formatCount } from "../lib/numerals";

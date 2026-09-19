@@ -10,6 +10,7 @@ import CommentSection from "../../components/CommentSection.astro";
 import AudioPlayer from "../../components/AudioPlayer.astro";
 import NewsletterForm from "../../components/NewsletterForm.astro";
 import LanguageChip from "../../components/LanguageChip.astro";
+import PageHeader from "../../components/PageHeader.astro";
 import Callout from "../../components/Callout.astro";
 import Footnote from "../../components/Footnote.astro";
 import {
@@ -75,39 +76,35 @@ const jsonLd = {
     <script is:inline type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
   </Fragment>
   <article data-pagefind-body>
-    <header class="mb-10">
-      <div class="mb-4 flex flex-wrap items-center gap-3">
-        <LanguageChip lang={entry.data.lang} />
-        {
-          series && (
-            <a
-              href={`/series/${series.id}`}
-              class="font-sans text-xs text-text-muted transition-colors duration-fast hover:text-accent"
-            >
-              {series.data.title}
-            </a>
-          )
-        }
-      </div>
-      <h1 class="font-serif text-4xl leading-tight text-balance sm:text-5xl" lang={entry.data.lang}>
-        {entry.data.title}
-      </h1>
-      <p class="mt-4 max-w-prose font-serif text-lg text-text-muted" lang={entry.data.lang}>
-        {entry.data.description}
-      </p>
-      <div class="mt-6 flex flex-wrap items-center gap-3 font-sans text-xs text-text-muted">
-        <time datetime={entry.data.pubDate.toISOString()}>{formatDate(entry.data.pubDate, entry.data.lang)}</time>
-        <span aria-hidden="true">·</span>
-        <span>{formatMinutes(readingMinutes, entry.data.lang)}</span>
-        <ViewCount viewKey={`views:${entry.id}`} lang={entry.data.lang} server:defer>
-          <Fragment slot="fallback" />
-        </ViewCount>
-      </div>
-      <div class="mt-6 flex flex-wrap items-center gap-4">
-        <ReactionButton slug={entry.id} lang={entry.data.lang} />
-        <ShareRow url={canonicalUrl} title={entry.data.title} />
-      </div>
-    </header>
+    <div class="mb-10">
+      <PageHeader title={entry.data.title} lede={entry.data.description} lang={entry.data.lang} size="md">
+        <div class="mb-1 flex flex-wrap items-center gap-3" slot="top">
+          <LanguageChip lang={entry.data.lang} />
+          {
+            series && (
+              <a
+                href={`/series/${series.id}`}
+                class="font-sans text-xs font-semibold text-accent transition-colors duration-fast hover:text-text"
+              >
+                {series.data.title}
+              </a>
+            )
+          }
+        </div>
+        <div class="mt-6 flex flex-wrap items-center gap-3 font-sans text-xs text-text-muted">
+          <time datetime={entry.data.pubDate.toISOString()}>{formatDate(entry.data.pubDate, entry.data.lang)}</time>
+          <span aria-hidden="true">·</span>
+          <span>{formatMinutes(readingMinutes, entry.data.lang)}</span>
+          <ViewCount viewKey={`views:${entry.id}`} lang={entry.data.lang} server:defer>
+            <Fragment slot="fallback" />
+          </ViewCount>
+        </div>
+        <div class="mt-6 flex flex-wrap items-center gap-4">
+          <ReactionButton slug={entry.id} lang={entry.data.lang} />
+          <ShareRow url={canonicalUrl} title={entry.data.title} />
+        </div>
+      </PageHeader>
+    </div>
 
     {entry.data.audio && <AudioPlayer src={entry.data.audio} lang={entry.data.lang} />}
 
@@ -128,7 +125,7 @@ const jsonLd = {
     {
       relatedWithMinutes.length > 0 && (
         <section class="mt-16 border-t border-border pt-10" data-pagefind-ignore>
-          <h2 class="mb-6 font-sans text-sm font-medium uppercase tracking-wide text-text-muted">Related</h2>
+          <h2 class="eyebrow mb-6">Related</h2>
           <div class="grid gap-6 sm:grid-cols-3">
             {relatedWithMinutes.map(({ entry: relatedEntry, readingMinutes: relatedMinutes }) => (
               <ArticleCard entry={relatedEntry} readingMinutes={relatedMinutes} />
