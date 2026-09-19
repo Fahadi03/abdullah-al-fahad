@@ -5,6 +5,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import Header from "../components/Header.astro";
 import { getApprovedEntries } from "../lib/guestbook";
 import { formatDate } from "../lib/numerals";
+import { features } from "../lib/features";
 
 const entries = await getApprovedEntries();
 const sent = Astro.url.searchParams.get("sent");
@@ -38,54 +39,66 @@ function hasBangla(text: string): boolean {
       )
     }
 
-    <form method="POST" action="/api/guestbook" class="guestbook-form" data-guestbook-form novalidate>
-      <div class="field">
-        <label for="name">Name</label>
-        <input type="text" id="name" name="name" autocomplete="name" required />
-        <p class="field-error" data-error-for="name" hidden></p>
-      </div>
+    {
+      features.redis ? (
+        <>
+          <form method="POST" action="/api/guestbook" class="guestbook-form" data-guestbook-form novalidate>
+            <div class="field">
+              <label for="name">Name</label>
+              <input type="text" id="name" name="name" autocomplete="name" required />
+              <p class="field-error" data-error-for="name" hidden />
+            </div>
 
-      <div class="field">
-        <label for="message">Message</label>
-        <textarea id="message" name="message" rows="3" required></textarea>
-        <p class="field-error" data-error-for="message" hidden></p>
-      </div>
+            <div class="field">
+              <label for="message">Message</label>
+              <textarea id="message" name="message" rows="3" required />
+              <p class="field-error" data-error-for="message" hidden />
+            </div>
 
-      <div class="honeypot" aria-hidden="true">
-        <label for="company">Company</label>
-        <input type="text" id="company" name="company" tabindex="-1" autocomplete="off" />
-      </div>
-      <input type="hidden" name="startedAt" data-started-at value="" />
+            <div class="honeypot" aria-hidden="true">
+              <label for="company">Company</label>
+              <input type="text" id="company" name="company" tabindex="-1" autocomplete="off" />
+            </div>
+            <input type="hidden" name="startedAt" data-started-at value="" />
 
-      <p class="form-error" data-form-error hidden></p>
+            <p class="form-error" data-form-error hidden />
 
-      <button type="submit" class="submit-button" data-submit-button>Sign the guestbook</button>
-    </form>
+            <button type="submit" class="submit-button" data-submit-button>
+              Sign the guestbook
+            </button>
+          </form>
 
-    <div class="entries">
-      {
-        entries.length === 0 ? (
-          <p class="empty-state">No entries yet — be the first.</p>
-        ) : (
-          entries.map((entry) => (
-            <article class="entry">
-              <p class="entry-message" lang={hasBangla(entry.message) ? "bn" : undefined}>
-                {entry.message}
-              </p>
-              <p class="entry-meta">
-                <span class="entry-name" lang={hasBangla(entry.name) ? "bn" : undefined}>
-                  {entry.name}
-                </span>
-                <span aria-hidden="true"> · </span>
-                <time datetime={new Date(entry.createdAt).toISOString()}>
-                  {formatDate(new Date(entry.createdAt), "en")}
-                </time>
-              </p>
-            </article>
-          ))
-        )
-      }
-    </div>
+          <div class="entries">
+            {entries.length === 0 ? (
+              <p class="empty-state">No entries yet — be the first.</p>
+            ) : (
+              entries.map((entry) => (
+                <article class="entry">
+                  <p class="entry-message" lang={hasBangla(entry.message) ? "bn" : undefined}>
+                    {entry.message}
+                  </p>
+                  <p class="entry-meta">
+                    <span class="entry-name" lang={hasBangla(entry.name) ? "bn" : undefined}>
+                      {entry.name}
+                    </span>
+                    <span aria-hidden="true"> · </span>
+                    <time datetime={new Date(entry.createdAt).toISOString()}>
+                      {formatDate(new Date(entry.createdAt), "en")}
+                    </time>
+                  </p>
+                </article>
+              ))
+            )}
+          </div>
+        </>
+      ) : (
+        // Without Upstash there's nowhere to save a note — don't show a form that can't work.
+        <p class="guestbook-closed">
+          The guestbook is closed for now. If you'd like to say hello, the <a href="/contact">contact page</a> has
+          the best ways to reach me.
+        </p>
+      )
+    }
   </main>
 </BaseLayout>
 
@@ -225,6 +238,23 @@ function hasBangla(text: string): boolean {
     font-family: var(--font-sans);
     font-size: var(--text-sm);
     color: var(--color-text-muted);
+  }
+
+  .guestbook-closed {
+    margin-top: 2.5rem;
+    padding: 1.25rem 1.5rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background-color: var(--color-bg-raised);
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+    color: var(--color-text-muted);
+  }
+
+  .guestbook-closed a {
+    color: var(--color-accent);
+    text-decoration: underline;
+    text-underline-offset: 3px;
   }
 </style>
 

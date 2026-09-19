@@ -1,18 +1,24 @@
 ---
 import SocialIcon from "./SocialIcon.astro";
 import { SITE } from "../config/site";
+import { features } from "../lib/features";
+import { getPublishedVideos } from "../lib/videos";
 
 const year = new Date().getFullYear();
+const hasVideos = (await getPublishedVideos()).length > 0;
 
+// The header keeps five primary links; the footer lists everything else too —
+// but only pages that have something behind them.
 const links = [
+  { href: "/start", label: "Start here" },
   { href: "/writings", label: "Writings" },
-  { href: "/videos", label: "Videos" },
+  ...(hasVideos ? [{ href: "/videos", label: "Videos" }] : []),
   { href: SITE.assemblyBase, label: "Assembly" },
   { href: "/projects", label: "Projects" },
   { href: "/about", label: "About" },
   { href: "/now", label: "Now" },
   { href: "/contact", label: "Contact" },
-  { href: "/guestbook", label: "Guestbook" },
+  ...(features.redis ? [{ href: "/guestbook", label: "Guestbook" }] : []),
 ];
 ---
 
@@ -67,7 +73,7 @@ const links = [
 
         <div class="footer-actions">
           <a href="/contact" class="footer-cta">Contact me <span aria-hidden="true">→</span></a>
-          <a href="/guestbook" class="footer-link">Sign the guestbook</a>
+          {features.redis && <a href="/guestbook" class="footer-link">Sign the guestbook</a>}
         </div>
 
         <ul class="footer-social">

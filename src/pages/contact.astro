@@ -3,6 +3,9 @@ export const prerender = false;
 
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Header from "../components/Header.astro";
+import SocialIcon from "../components/SocialIcon.astro";
+import { SITE } from "../config/site";
+import { features } from "../lib/features";
 
 const sent = Astro.url.searchParams.get("sent");
 ---
@@ -31,38 +34,69 @@ const sent = Astro.url.searchParams.get("sent");
       )
     }
 
-    <form method="POST" action="/api/contact" class="contact-form" data-contact-form novalidate>
-      <div class="field">
-        <label for="name">Name</label>
-        <input type="text" id="name" name="name" autocomplete="name" required />
-        <p class="field-error" data-error-for="name" hidden></p>
-      </div>
+    {
+      features.contactForm ? (
+        <form method="POST" action="/api/contact" class="contact-form" data-contact-form novalidate>
+          <div class="field">
+            <label for="name">Name</label>
+            <input type="text" id="name" name="name" autocomplete="name" required />
+            <p class="field-error" data-error-for="name" hidden />
+          </div>
 
-      <div class="field">
-        <label for="email">Email</label>
-        <input type="email" id="email" name="email" autocomplete="email" required />
-        <p class="field-error" data-error-for="email" hidden></p>
-      </div>
+          <div class="field">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" autocomplete="email" required />
+            <p class="field-error" data-error-for="email" hidden />
+          </div>
 
-      <div class="field">
-        <label for="message">Message</label>
-        <textarea id="message" name="message" rows="6" required></textarea>
-        <p class="field-error" data-error-for="message" hidden></p>
-      </div>
+          <div class="field">
+            <label for="message">Message</label>
+            <textarea id="message" name="message" rows="6" required />
+            <p class="field-error" data-error-for="message" hidden />
+          </div>
 
-      <!-- Honeypot — hidden from real visitors via CSS, not `type="hidden"`,
-           since some bots skip inputs with type=hidden. Real users never
-           tab to it (tabindex -1) or hear it (aria-hidden). -->
-      <div class="honeypot" aria-hidden="true">
-        <label for="company">Company</label>
-        <input type="text" id="company" name="company" tabindex="-1" autocomplete="off" />
-      </div>
-      <input type="hidden" name="startedAt" data-started-at value="" />
+          {/* Honeypot — hidden from real visitors via CSS, not `type="hidden"`,
+              since some bots skip inputs with type=hidden. Real users never
+              tab to it (tabindex -1) or hear it (aria-hidden). */}
+          <div class="honeypot" aria-hidden="true">
+            <label for="company">Company</label>
+            <input type="text" id="company" name="company" tabindex="-1" autocomplete="off" />
+          </div>
+          <input type="hidden" name="startedAt" data-started-at value="" />
 
-      <p class="form-error" data-form-error hidden></p>
+          <p class="form-error" data-form-error hidden />
 
-      <button type="submit" class="submit-button" data-submit-button>Send</button>
-    </form>
+          <button type="submit" class="submit-button" data-submit-button>
+            Send
+          </button>
+        </form>
+      ) : (
+        // Without Resend a submitted message would silently go nowhere — offer direct channels instead.
+        <div class="contact-alt">
+          <p class="contact-alt-lead">The quickest ways to reach me:</p>
+          <ul class="contact-alt-list">
+            <li>
+              <a href={SITE.social.linkedin} target="_blank" rel="noopener noreferrer">
+                <SocialIcon name="linkedin" size={20} />
+                <span>
+                  <strong>LinkedIn</strong>
+                  <small>Send me a message</small>
+                </span>
+              </a>
+            </li>
+            <li>
+              <a href={SITE.social.github} target="_blank" rel="noopener noreferrer">
+                <SocialIcon name="github" size={20} />
+                <span>
+                  <strong>GitHub</strong>
+                  <small>See my code or open an issue</small>
+                </span>
+              </a>
+            </li>
+          </ul>
+        </div>
+      )
+    }
   </main>
 </BaseLayout>
 
@@ -164,6 +198,58 @@ const sent = Astro.url.searchParams.get("sent");
 
   .submit-button:disabled {
     opacity: 0.6;
+  }
+
+  .contact-alt {
+    margin-top: 2.5rem;
+  }
+
+  .contact-alt-lead {
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+  }
+
+  .contact-alt-list {
+    margin-top: 1rem;
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .contact-alt-list a {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background-color: var(--color-bg-raised);
+    color: var(--color-text);
+    transition:
+      border-color var(--duration-base) var(--ease-editorial),
+      transform var(--duration-slow) var(--ease-editorial);
+  }
+
+  .contact-alt-list a:hover,
+  .contact-alt-list a:focus-visible {
+    border-color: var(--color-accent);
+    transform: translateY(-2px);
+  }
+
+  .contact-alt-list svg {
+    flex-shrink: 0;
+    color: var(--color-accent);
+  }
+
+  .contact-alt-list span {
+    display: flex;
+    flex-direction: column;
+    font-family: var(--font-sans);
+  }
+
+  .contact-alt-list small {
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
   }
 </style>
 

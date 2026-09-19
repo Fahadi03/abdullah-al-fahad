@@ -5,9 +5,10 @@ import sitemap from "@astrojs/sitemap";
 import tailwindcss from "@tailwindcss/vite";
 import { filenameTransformer } from "./src/lib/shiki-filename-transformer.ts";
 import { rehypeCodeBlocks } from "./src/lib/rehype-code-blocks.ts";
+import { resolveSiteUrl } from "./scripts/site-url.mjs";
 
 export default defineConfig({
-  site: (process.env.SITE_URL || "http://localhost:4321").replace(/\/$/, ""),
+  site: resolveSiteUrl(),
   output: "static",
   adapter: vercel(),
   integrations: [

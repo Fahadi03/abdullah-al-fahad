@@ -1,4 +1,6 @@
 ---
+import { features } from "../lib/features";
+
 interface Props {
   /** Stable id, independent of URL — e.g. entry.id, or `assembly:${entry.id}`. */
   pageId: string;
@@ -6,26 +8,34 @@ interface Props {
   pageTitle: string;
 }
 
+// Renders nothing until Cusdis is configured.
 const { pageId, pageUrl, pageTitle } = Astro.props;
 const appId = import.meta.env.PUBLIC_CUSDIS_APP_ID;
 const host = import.meta.env.PUBLIC_CUSDIS_HOST || "https://cusdis.com";
 ---
 
-<section class="comments" data-pagefind-ignore>
-  <h2 class="comments-heading">Comments <span lang="bn">— মন্তব্য</span></h2>
-
-  {
-    appId ? (
-      <div class="comments-frame" data-comments-frame data-app-id={appId} data-host={host} data-page-id={pageId} data-page-url={pageUrl} data-page-title={pageTitle}>
-        <div class="comments-placeholder" data-comments-placeholder>Loading comments…</div>
+{
+  features.comments && (
+    <section class="comments" data-pagefind-ignore>
+      <h2 class="comments-heading">
+        Comments <span lang="bn">— মন্তব্য</span>
+      </h2>
+      <div
+        class="comments-frame"
+        data-comments-frame
+        data-app-id={appId}
+        data-host={host}
+        data-page-id={pageId}
+        data-page-url={pageUrl}
+        data-page-title={pageTitle}
+      >
+        <div class="comments-placeholder" data-comments-placeholder>
+          Loading comments…
+        </div>
       </div>
-    ) : (
-      <p class="comments-empty">
-        Comments aren't set up yet. <span lang="bn">মন্তব্যের ব্যবস্থা এখনো চালু হয়নি।</span>
-      </p>
-    )
-  }
-</section>
+    </section>
+  )
+}
 
 <style>
   .comments {
@@ -48,7 +58,6 @@ const host = import.meta.env.PUBLIC_CUSDIS_HOST || "https://cusdis.com";
     letter-spacing: normal;
   }
 
-  .comments-empty,
   .comments-placeholder {
     margin-top: 1.25rem;
     font-family: var(--font-sans);

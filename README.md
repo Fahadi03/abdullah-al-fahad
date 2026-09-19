@@ -246,7 +246,8 @@ like today.
 
 | Var | Purpose |
 |---|---|
-| `SITE_URL` | Canonical origin, no trailing slash. Every canonical tag, OG URL, RSS/sitemap entry is built from this — see `src/config/site.ts`. |
+| `SITE_URL` | Canonical origin, no trailing slash. Every canonical tag, OG URL, RSS/sitemap entry is built from this — see `scripts/site-url.mjs` and `src/config/site.ts`. Optional on Vercel: when unset, the project's production domain (`VERCEL_PROJECT_PRODUCTION_URL`) is used, so canonical URLs never point at localhost. Set it once a custom domain exists. |
+| _(feature flags)_ | `src/lib/features.ts` checks which of the services below are configured. Anything missing is hidden rather than shown half-working: no newsletter box, no comments block, no 👏 button, the guestbook shows a closed notice, and the contact page offers LinkedIn/GitHub instead of a form. |
 | `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` | [console.upstash.com](https://console.upstash.com) → create a Redis database → REST API section. Backs view counts, reactions, the guestbook, and rate limiting. |
 | `RESEND_API_KEY`, `CONTACT_EMAIL`, `CONTACT_FROM_EMAIL` | [resend.com](https://resend.com) → API Keys. `CONTACT_FROM_EMAIL` must be on a domain verified with Resend (their sandbox domain works for testing). Powers the contact form. |
 | `PUBLIC_CUSDIS_APP_ID`, `PUBLIC_CUSDIS_HOST` | [cusdis.com](https://cusdis.com) → create a project → App ID. `PUBLIC_` because it's embedded client-side — not a secret. Leave the host unset to use `https://cusdis.com`, or point it at a self-hosted instance. |

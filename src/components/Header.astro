@@ -2,16 +2,13 @@
 import ThemeToggle from "./ThemeToggle.astro";
 import { SITE } from "../config/site";
 
+// Five primary links. Everything else (Start here, Now, Videos, Guestbook) lives in the footer.
 const navLinks = [
-  { href: "/start", label: "Start here" },
-  { href: "/writings", label: "Writings" },
-  { href: "/videos", label: "Videos" },
-  { href: SITE.assemblyBase, label: "Assembly" },
   { href: "/projects", label: "Projects" },
+  { href: "/writings", label: "Writings" },
+  { href: SITE.assemblyBase, label: "Assembly" },
   { href: "/about", label: "About" },
-  { href: "/now", label: "Now" },
   { href: "/contact", label: "Contact" },
-  { href: "/guestbook", label: "Guestbook" },
 ];
 
 const path = Astro.url.pathname.replace(/\/$/, "") || "/";
@@ -20,7 +17,7 @@ const isActive = (href: string) => path === href || path.startsWith(`${href}/`);
 
 <header class="site-header">
   <div class="header-inner">
-    <a href="/" class="brand" aria-label={`${SITE.name} — home`}>
+    <a href="/" class="brand">
       <span class="brand-name">{SITE.name}</span>
       <span class="brand-sub">Writer | Full-Stack Developer</span>
     </a>
@@ -338,7 +335,7 @@ const isActive = (href: string) => path === href || path.startsWith(`${href}/`);
     }
   }
 
-  @media (min-width: 1280px) {
+  @media (min-width: 1024px) {
     .desktop-nav {
       display: block;
     }

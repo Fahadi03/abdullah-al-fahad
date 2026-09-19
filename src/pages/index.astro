@@ -5,6 +5,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import Header from "../components/Header.astro";
 import NewsletterForm from "../components/NewsletterForm.astro";
 import SocialIcon from "../components/SocialIcon.astro";
+import { features } from "../lib/features";
 import { getPublishedWritings, resolveSeries } from "../lib/writings";
 import { getPublishedVideos } from "../lib/videos";
 import { formatDate } from "../lib/numerals";
@@ -145,7 +146,7 @@ const tabs = [
           machine learning, practical technical notes in English, and since February 2025 I've run Assembly of
           Ideas — a small home for literature and Bangla historical writing.
         </p>
-        <a href="/about" class="btn btn-primary about-more">Read more</a>
+        <a href="/about" class="btn btn-primary about-more">Read more about me</a>
       </div>
 
       <div class="about-follow">
@@ -246,9 +247,13 @@ const tabs = [
       )
     }
 
-    <section class="panel newsletter">
-      <NewsletterForm />
-    </section>
+    {
+      features.newsletter && (
+        <section class="panel newsletter">
+          <NewsletterForm />
+        </section>
+      )
+    }
   </main>
 </BaseLayout>
 

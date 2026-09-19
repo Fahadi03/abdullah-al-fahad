@@ -22,6 +22,7 @@ import {
 import { estimateReadingMinutes } from "../../lib/reading-time";
 import { formatDate, formatMinutes } from "../../lib/numerals";
 import { SITE } from "../../config/site";
+import { features } from "../../lib/features";
 
 export async function getStaticPaths() {
   const writings = await getPublishedWritings();
@@ -114,9 +115,13 @@ const jsonLd = {
       <Content components={{ Callout, Footnote }} />
     </div>
 
-    <div class="mt-16" data-pagefind-ignore>
-      <NewsletterForm lang={entry.data.lang} />
-    </div>
+    {
+      features.newsletter && (
+        <div class="mt-16" data-pagefind-ignore>
+          <NewsletterForm lang={entry.data.lang} />
+        </div>
+      )
+    }
 
     {seriesEpisodes.length > 1 && <SeriesNav episodes={seriesEpisodes} current={entry} />}
 
