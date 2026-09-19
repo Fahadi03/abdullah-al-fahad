@@ -1,51 +1,53 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Header from "../components/Header.astro";
+import PageHeader from "../components/PageHeader.astro";
+import { SITE } from "../config/site";
+
+const links = [
+  { href: "/", label: "Home" },
+  { href: "/writings", label: "Writings" },
+  { href: "/projects", label: "Projects" },
+  { href: SITE.assemblyBase, label: "Assembly of Ideas" },
+];
 ---
 
 <BaseLayout title="Page not found" description="This page doesn't exist.">
   <Header />
 
-  <main class="mx-auto max-w-3xl px-6 py-20 sm:px-10 sm:py-28">
-    <p class="eyebrow">404</p>
-    <h1 class="font-serif text-4xl leading-tight text-balance sm:text-5xl">This page doesn't exist.</h1>
-    <p class="mt-4 max-w-prose font-serif text-lg text-text-muted">
-      The link might be old, or mistyped. Try one of these instead.
-    </p>
-    <p class="mt-4 max-w-prose font-serif text-lg text-text-muted" lang="bn">
-      লিঙ্কটা হয়তো পুরনো, অথবা ভুল টাইপ হয়েছে। এর বদলে এগুলো দেখতে পারেন।
-    </p>
-
-    <ul class="links">
-      <li><a href="/">Home</a></li>
-      <li><a href="/writings">Writings</a></li>
-      <li><a href="/videos">Videos</a></li>
-      <li><a href="/assembly">Assembly of Ideas</a></li>
-    </ul>
+  <main class="page">
+    <PageHeader
+      eyebrow="404"
+      title="Page not found"
+      lede="The link might be old, or mistyped. Try one of these instead."
+    >
+      <p class="lede-bn" lang="bn">লিঙ্কটা হয়তো পুরনো, অথবা ভুল টাইপ হয়েছে। এর বদলে এগুলো দেখতে পারেন।</p>
+      <ul class="links">
+        {
+          links.map((link, index) => (
+            <li>
+              <a href={link.href} class:list={["btn", index === 0 ? "btn-primary" : "btn-outline"]}>
+                {link.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </PageHeader>
   </main>
 </BaseLayout>
 
 <style>
-  .eyebrow {
+  .lede-bn {
+    margin-top: 0.5rem;
     font-family: var(--font-sans);
-    font-size: var(--text-sm);
     color: var(--color-text-muted);
   }
 
   .links {
-    margin-top: 2.5rem;
+    margin-top: 2rem;
     display: flex;
     flex-wrap: wrap;
-    gap: 1.5rem;
-  }
-
-  .links a {
-    font-family: var(--font-sans);
-    font-size: var(--text-sm);
-    color: var(--color-accent);
-  }
-
-  .links a:hover {
-    text-decoration: underline;
+    gap: 0.75rem;
   }
 </style>
